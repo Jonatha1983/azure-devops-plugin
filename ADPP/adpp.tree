@@ -4,8 +4,7 @@
 
 <instance-profile id="adpp"
                  name="Azure DevOps Pipelines Plugin"
-                 start-page="starter-topic.md">
+                 start-page="Overview.topic">
 
     <toc-element topic="Overview.topic"/>
-    <toc-element topic="starter-topic.md"/>
 </instance-profile>

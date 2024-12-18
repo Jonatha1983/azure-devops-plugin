@@ -9,7 +9,7 @@ permissions:
   pages: write
 
 env:
-  INSTANCE: 'AZDPP/adpp'
+  INSTANCE: 'ADPP/adpp'
   ARTIFACT: 'webHelpADPP2-all.zip'
   DOCKER_VERSION: '243.22562'
 

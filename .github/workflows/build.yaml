@@ -10,7 +10,7 @@ permissions:
 
 env:
   INSTANCE: 'AZDPP/adpp'
-  ARTIFACT: 'webHelpAZD2-all.zip'
+  ARTIFACT: 'webHelpADPP2-all.zip'
   DOCKER_VERSION: '243.22562'
 
 jobs:
@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
 
       # Run tests
       - name: Run Tests
@@ -45,7 +45,7 @@ jobs:
 
       # Upload a Kover report to CodeCov
       - name: Upload Code Coverage Report
-        uses: codecov/codecov-action@v5.0.7
+        uses: codecov/codecov-action@v5.1.2
         with:
           files: ${{ github.workspace }}/build/reports/kover/report.xml
           flags: unittests
@@ -65,7 +65,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}  # to check out the actual pull request commit, not the merge commit
           fetch-depth: 0  # a full history is required for pull request analysis
       - name: 'Qodana Scan'
-        uses: JetBrains/qodana-action@v2024.2
+        uses: JetBrains/qodana-action@v2024.3
         with:
           pr-mode: false
         env:
@@ -127,7 +127,7 @@ jobs:
         run: unzip -O UTF-8 -qq '${{ env.ARTIFACT }}' -d dir
 
       - name: Setup Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v5
 
       - name: Package and upload Pages artifact
         uses: actions/upload-pages-artifact@v3

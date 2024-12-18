@@ -5,7 +5,7 @@ import javax.inject.Inject
 
 open class PipelineTriggerConfig @Inject constructor() {
     var branches: List<String>? = null
-    var tags: List<String>? = null
+    private var tags: List<String>? = null
     var stages: List<String>? = null
 
     internal fun toPipelineTrigger() = PipelineTrigger(

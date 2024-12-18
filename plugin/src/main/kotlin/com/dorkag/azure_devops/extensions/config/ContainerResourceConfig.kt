@@ -8,10 +8,10 @@ open class ContainerResourceConfig @Inject constructor(
     // Removing the "val name: String" constructor param
     val objects: ObjectFactory
 ) {
-    var image: String = ""
-    var options: String? = null
-    var ports: List<String>? = null
-    var volumes: List<String>? = null
+    private var image: String = ""
+    private var options: String? = null
+    private var ports: List<String>? = null
+    private var volumes: List<String>? = null
 
     /**
      * Accepts containerName from the DSL map key

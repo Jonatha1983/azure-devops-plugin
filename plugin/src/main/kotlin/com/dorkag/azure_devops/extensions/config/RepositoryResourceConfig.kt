@@ -9,9 +9,9 @@ open class RepositoryResourceConfig @Inject constructor(
     val objects: ObjectFactory
 ) {
     var type: String = ""
-    var repoName: String = ""
-    var ref: String? = null
-    var endpoint: String? = null
+    private var repoName: String = ""
+    private var ref: String? = null
+    private var endpoint: String? = null
     private var triggerConfig: RepositoryTriggerConfig? = null
 
     fun trigger(action: Action<RepositoryTriggerConfig>) {

@@ -141,7 +141,7 @@ abstract class GenerateDslFromYamlTask : DefaultTask() {
                     appendLine("                    strategy {")
                     strat.type?.let { appendLine("                        type.set(\"$it\")") }
                     strat.maxParallel?.let { appendLine("                        maxParallel.set($it)") }
-                    if (strat.matrix != null && strat.matrix.isNotEmpty()) {
+                    if (!strat.matrix.isNullOrEmpty()) {
                         appendLine("                        matrix.putAll(mapOf(")
                         strat.matrix.forEach { (matrixKey, matrixVal) ->
                             // matrixVal is a map

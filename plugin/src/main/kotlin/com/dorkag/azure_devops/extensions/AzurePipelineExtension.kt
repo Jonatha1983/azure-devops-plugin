@@ -24,7 +24,7 @@ open class AzurePipelineExtension @Inject constructor(
 
     // Triggers
     val pr: Property<PullRequestTriggerConfig> = objects.property(PullRequestTriggerConfig::class.java)
-    val scheduleTriggers: NamedDomainObjectContainer<ScheduleConfig> =
+    private val scheduleTriggers: NamedDomainObjectContainer<ScheduleConfig> =
         objects.domainObjectContainer(ScheduleConfig::class.java)
 
     // A single unified resources DSL

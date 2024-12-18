@@ -6,7 +6,7 @@ kover = "0.9.0"
 changelog = "2.2.1"
 
 [plugins]
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.0.20" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.1.0" }
 qodana = { id = "org.jetbrains.qodana", version.ref = "qodana" }
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }

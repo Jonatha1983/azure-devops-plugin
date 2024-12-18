@@ -8,13 +8,13 @@ import javax.inject.Inject
 
 open class ResourcesConfig @Inject constructor(val objects: ObjectFactory) {
     // Example: Repositories, containers, pipeline references, etc.
-    val repositories: MapProperty<String, RepositoryResourceConfig> =
+    private val repositories: MapProperty<String, RepositoryResourceConfig> =
         objects.mapProperty(String::class.java, RepositoryResourceConfig::class.java)
-    val containers: MapProperty<String, ContainerResourceConfig> =
+    private val containers: MapProperty<String, ContainerResourceConfig> =
         objects.mapProperty(String::class.java, ContainerResourceConfig::class.java)
 
     // Pipelines DSL
-    val pipelines: MapProperty<String, PipelineResourceConfig> =
+    private val pipelines: MapProperty<String, PipelineResourceConfig> =
         objects.mapProperty(String::class.java, PipelineResourceConfig::class.java)
 
     @Suppress("unused")

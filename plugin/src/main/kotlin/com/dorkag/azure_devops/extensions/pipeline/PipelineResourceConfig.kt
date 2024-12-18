@@ -7,9 +7,9 @@ import javax.inject.Inject
 open class PipelineResourceConfig @Inject constructor(
     val name: String
 ) {
-    var source: String = ""
-    var version: String? = null
-    var branch: String? = null
+    private var source: String = ""
+    private var version: String? = null
+    private var branch: String? = null
     private var triggerConfig: PipelineTriggerConfig? = null
 
     fun trigger(action: Action<PipelineTriggerConfig>) {

@@ -1,0 +1,28 @@
+name: DockerBuildPipeline
+trigger:
+  - main
+  - develop
+pr:
+  - main
+  - develop
+pool:
+  vmImage: ubuntu-latest
+stages:
+  - stage: BuildDocker
+    displayName: Build Docker image
+    jobs:
+      - job: GradleBuild
+        displayName: Gradlew build
+        steps:
+          - script: ./gradlew bootJar :test --info --build-cache
+            displayName: Gradlew build
+      - job: DockerLogin
+        displayName: Login to Azure registry
+        steps:
+          - script: docker login -u ... -p ... myregistry.azurecr.io
+            displayName: Login to Azure registry
+      - job: DockerBuildPush
+        displayName: Build and push image to container registry
+        steps:
+          - script: docker build . -t myregistry.azurecr.io/repository:latest && docker push myregistry.azurecr.io/repository:latest
+            displayName: Build and push image

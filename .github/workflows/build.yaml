@@ -2,7 +2,12 @@
 
 name: Plugin CI
 
-on: [ push,workflow_dispatch ]
+on:
+  push:
+    branches: [ main ]
+  # Trigger the workflow on any pull request
+  pull_request:
+  workflow_dispatch:
 
 permissions:
   id-token: write
@@ -88,7 +93,7 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   inspectCode:
-    name: inspectCode
+    name: InspectCode
     runs-on: ubuntu-latest
     needs: build
     permissions:
@@ -108,8 +113,39 @@ jobs:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_1672983773 }}
           QODANA_ENDPOINT: 'https://qodana.cloud'
 
+  test-report:
+    name: Test Report
+    needs: [ test ]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      checks: write
+      pull-requests: write
+      actions: read
+    steps:
+      - name: Fetch Sources
+        uses: actions/checkout@v4
+        with:
+          token: '${{ secrets.GITHUB_TOKEN }}'
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4.1.8
+        id: download
+        with:
+          name: tests-report
+          path: ~/
+
+      - name: Generate Test Report
+        uses: dorny/test-reporter@v1.9.1
+        if: success() || failure()
+        with:
+          name: Test Report Dashboard
+          reporter: java-junit
+          fail-on-error: 'true'
+          path: '${{steps.download.outputs.download-path}}/*.xml'
+
   build-docs:
-    name: Build docs
+    name: Build Docs
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     needs: build
@@ -134,6 +170,7 @@ jobs:
           retention-days: 7
 
   test-docs:
+    name: Test Docs
     if: github.event_name != 'pull_request'
     needs: build-docs
     runs-on: ubuntu-latest
@@ -150,6 +187,7 @@ jobs:
           instance: ${{ env.INSTANCE }}
 
   deploy-docs:
+    name: Deploy Docs
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     needs: [ build-docs, test-docs ]

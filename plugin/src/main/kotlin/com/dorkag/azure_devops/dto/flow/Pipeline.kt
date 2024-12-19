@@ -1,11 +1,15 @@
-package com.dorkag.azure_devops.dto
+package com.dorkag.azure_devops.dto.flow
 
+import com.dorkag.azure_devops.dto.LockBehavior
+import com.dorkag.azure_devops.dto.Parameter
+import com.dorkag.azure_devops.dto.Pool
+import com.dorkag.azure_devops.dto.Schedule
 import com.dorkag.azure_devops.dto.resources.Resources
 
 
 data class Pipeline(
     val name: String,
-    // Instead of a Trigger object, store directly a list of branches
+    // Instead of a Trigger object, directly store a list of branches
     val trigger: List<String>? = null,
     val pr: List<String>? = null,
 

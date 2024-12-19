@@ -10,8 +10,27 @@ import com.dorkag.azure_devops.tasks.ValidatePipelineTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
+/**
+ * The Azure DevOps Pipeline plugin.
+ *
+ * This plugin is responsible for generating the Azure DevOps pipeline configuration
+ * from the Gradle configuration.
+ *
+ * The plugin is applied to the root project and subprojects.
+ *
+ * The plugin provides the following tasks:
+ * - `generatePipeline`: Generates the root Azure DevOps pipeline YAML file.
+ * - `validatePipeline`: Validates the Azure DevOps pipeline configuration.
+ * - `generateSubprojectTemplate`: Generates the Azure DevOps pipeline template for the subproject.
+ * - `convertYamlToDsl`: Generates the Azure DevOps pipeline DSL from the YAML file.
+ *
+ */
 @Suppress("unused")
 class AzureDevopsPluginPlugin : Plugin<Project> {
+
+    /**
+     * Applies the plugin to the project.
+     */
     override fun apply(project: Project) {
         if (project == project.rootProject) {
             applyToRootProject(project)
@@ -62,6 +81,20 @@ class AzureDevopsPluginPlugin : Plugin<Project> {
 
     private fun validateBaseConfiguration(project: Project) {
         project.afterEvaluate {
+
+            val requestedTasks = project.gradle.startParameter.taskNames
+
+            // Check if any of the requested tasks require a valid pipeline configuration,
+            // For example, if only `generatePipeline` and `validatePipeline` require validation
+            val shouldValidate =
+                requestedTasks.any { it.contains("generatePipeline") || it.contains("validatePipeline") }
+
+            if (!shouldValidate) {
+                // If we don't need to validate for the requested tasks (like when convertYamlToDsl is run),
+                // just return and skip the validation logic.
+                return@afterEvaluate
+            }
+
             val extension = project.extensions.findByType(AzurePipelineExtension::class.java)
                 ?: throw PipelineConfigurationException("AzurePipelineExtension not configured")
 

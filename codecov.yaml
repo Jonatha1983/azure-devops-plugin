@@ -20,5 +20,6 @@ github_checks:
   annotations: true
 
 ignore:
-  - plugins/src/test/
-  - plugins/src/functionalTest/
+  - plugin/src/**/exceptions/**
+  - plugin/src/test/
+  - plugin/src/functionalTest/

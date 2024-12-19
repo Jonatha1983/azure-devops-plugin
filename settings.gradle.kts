@@ -7,4 +7,28 @@
  */
 
 rootProject.name = "azure-devops-plugin"
+
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+
+plugins {
+    id("org.jetbrains.kotlinx.kover.aggregation") version "0.9.0"
+}
+
 include("plugin")
+
+
+
+
+kover {
+    enableCoverage()
+
+    reports {
+        excludesAnnotatedBy.add("*.Kover*")
+    }
+}

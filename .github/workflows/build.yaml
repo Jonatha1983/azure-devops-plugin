@@ -1,8 +1,13 @@
 #This is a basic workflow that builds the plugin
 
-name: Build
+name: Plugin CI
 
-on: [ push,workflow_dispatch ]
+on:
+  push:
+    branches: [ main ]
+  # Trigger the workflow on any pull request
+  pull_request:
+  workflow_dispatch:
 
 permissions:
   id-token: write
@@ -15,7 +20,11 @@ env:
 
 jobs:
   build:
+    name: Build
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.properties.outputs.version }}
+      changelog: ${{ steps.properties.outputs.changelog }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -23,9 +32,40 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      # Run tests
-      - name: Run Tests
-        run: ./gradlew check
+      # Set environment variables
+      - name: Export Properties
+        id: properties
+        shell: bash
+        run: |
+          PROPERTIES="$(./gradlew properties --console=plain -q)"
+          VERSION="$(echo "$PROPERTIES" | grep "^version:" | cut -f2- -d ' ')"
+          CHANGELOG="$(./gradlew getChangelog --unreleased --no-header --console=plain -q)"
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      # Run Assemble
+      - name: Run Assemble
+        run: ./gradlew assemble
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # Run Check
+      - name: Run Check
+        run: ./gradlew check -Pkover koverHtmlReport -Pkover koverXmlReport
 
       # Collect Tests Result of failed tests
       - name: Collect Tests Result
@@ -33,7 +73,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tests-result
-          path: ${{ github.workspace }}/build/reports/tests
+          path: ${{ github.workspace }}/plugin/build/reports/tests/**
 
       # Collect Tests Result of failed tests
       - name: Collect Tests Report
@@ -41,7 +81,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tests-report
-          path: ${{ github.workspace }}/build/test-results/test/*.xml
+          path: ${{ github.workspace }}/plugin/build/test-results/**/*.xml
 
       # Upload a Kover report to CodeCov
       - name: Upload Code Coverage Report
@@ -52,7 +92,8 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-  qodana:
+  inspectCode:
+    name: InspectCode
     runs-on: ubuntu-latest
     needs: build
     permissions:
@@ -72,15 +113,46 @@ jobs:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_1672983773 }}
           QODANA_ENDPOINT: 'https://qodana.cloud'
 
+  test-report:
+    name: Test Report
+    needs: [ test ]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      checks: write
+      pull-requests: write
+      actions: read
+    steps:
+      - name: Fetch Sources
+        uses: actions/checkout@v4
+        with:
+          token: '${{ secrets.GITHUB_TOKEN }}'
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4.1.8
+        id: download
+        with:
+          name: tests-report
+          path: ~/
+
+      - name: Generate Test Report
+        uses: dorny/test-reporter@v1.9.1
+        if: success() || failure()
+        with:
+          name: Test Report Dashboard
+          reporter: java-junit
+          fail-on-error: 'true'
+          path: '${{steps.download.outputs.download-path}}/*/*.xml'
 
   build-docs:
-    if: github.ref == 'refs/heads/main'
+    name: Build Docs
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     needs: build
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        
+
       - name: Build docs using Writerside Docker builder
         uses: JetBrains/writerside-github-action@v4
         with:
@@ -98,7 +170,8 @@ jobs:
           retention-days: 7
 
   test-docs:
-    if: github.ref == 'refs/heads/main'
+    name: Test Docs
+    if: github.event_name != 'pull_request'
     needs: build-docs
     runs-on: ubuntu-latest
     steps:
@@ -114,7 +187,8 @@ jobs:
           instance: ${{ env.INSTANCE }}
 
   deploy-docs:
-    if: github.ref == 'refs/heads/main'
+    name: Deploy Docs
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     needs: [ build-docs, test-docs ]
     environment:
@@ -140,3 +214,40 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  # Prepare a draft release for GitHub Releases page for the manual verification
+  # If accepted and published, release workflow would be triggered
+  releaseDraft:
+    name: Release draft
+    if: github.event_name != 'pull_request'
+    needs: [ test,  inspectCode, deploy-docs ]
+    runs-on: ubuntu-20.04-16
+    permissions:
+      contents: write
+    steps:
+
+      # Check out the current repository
+      - name: Fetch Sources
+        uses: actions/checkout@v4
+
+      # Remove old release drafts by using the curl request for the available releases with a draft flag
+      - name: Remove Old Release Drafts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api repos/{owner}/{repo}/releases \
+            --jq '.[] | select(.draft == true) | .id' \
+            | xargs -I '{}' gh api -X DELETE repos/{owner}/{repo}/releases/{}
+
+      # Create a new release draft which is not publicly visible and requires manual acceptance
+      - name: Create Release Draft
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v${{ needs.build.outputs.version }}" \
+            --draft \
+            --title "v${{ needs.build.outputs.version }}" \
+            --notes "$(cat << 'EOM'
+          ${{ needs.build.outputs.changelog }}
+          EOM
+          )"

@@ -6,5 +6,10 @@
                  name="Azure DevOps Pipelines Plugin"
                  start-page="Overview.topic">
 
-    <toc-element topic="Overview.topic"/>
+    <toc-element topic="Azure-DevOps-Pipeline-Plugin.topic">
+        <toc-element topic="Overview.topic"/>
+        <toc-element topic="Concepts.topic"/>
+        <toc-element topic="Configurations.topic"/>
+        <toc-element topic="Tasks.topic"/>
+    </toc-element>
 </instance-profile>

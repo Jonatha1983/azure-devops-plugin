@@ -6,8 +6,9 @@ import java.io.InputStreamReader
 
 /*
 * @author: jonathan.gafner
-* @created: 19/09/2021
+* @created: 19/12/2024
 */
+@KoverAnnotation
 class Anchor
 
 fun getResourceAsText(path: String): String {

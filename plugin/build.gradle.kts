@@ -11,7 +11,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.changelog)
     alias(libs.plugins.qodana)
-    alias(libs.plugins.kover)
+//    alias(libs.plugins.kover)
 }
 
 group = properties("azdpp.group").get()
@@ -76,24 +76,24 @@ gradlePlugin.testSourceSets.add(sourceSets["functionalTest"])
 }
 
 
-kover {
-    reports {
-        total {
-            xml {
-                onCheck = true
-            }
-            html {
-                onCheck = true
-            }
-        }
-    }
-    currentProject {
-        sources {
-            excludedSourceSets.addAll(listOf("test", "functionalTest"))
-        }
-
-    }
-}
+//kover {
+//    reports {
+//        total {
+//            xml {
+//                onCheck = true
+//            }
+//            html {
+//                onCheck = true
+//            }
+//        }
+//    }
+//    currentProject {
+//        sources {
+//            excludedSourceSets.addAll(listOf("test", "functionalTest"))
+//        }
+//
+//    }
+//}
 
 
 changelog {

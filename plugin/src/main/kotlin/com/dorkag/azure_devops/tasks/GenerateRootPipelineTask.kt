@@ -1,6 +1,11 @@
 package com.dorkag.azure_devops.tasks
 
 import com.dorkag.azure_devops.dto.*
+import com.dorkag.azure_devops.dto.flow.Job
+import com.dorkag.azure_devops.dto.flow.Pipeline
+import com.dorkag.azure_devops.dto.flow.Stage
+import com.dorkag.azure_devops.dto.flow.Step
+import com.dorkag.azure_devops.dto.flow.Task
 import com.dorkag.azure_devops.extensions.AzurePipelineExtension
 import com.dorkag.azure_devops.extensions.config.JobConfig
 import com.dorkag.azure_devops.extensions.config.StageConfig
@@ -92,7 +97,8 @@ abstract class GenerateRootPipelineTask : DefaultTask() {
                 // Convert to the Step DTO with 'task: SomeTask@Version'
                 Step(
                     script = null, displayName = stepCfg.displayName.orNull, task = Task(
-                    name = stepCfg.taskName.get(), inputs = stepCfg.inputs.get().ifEmpty { null }))
+                        name = stepCfg.taskName.get(), inputs = stepCfg.inputs.get().ifEmpty { null })
+                )
             } else if (!stepCfg.script.orNull.isNullOrBlank()) {
                 // It's a script step
                 Step(

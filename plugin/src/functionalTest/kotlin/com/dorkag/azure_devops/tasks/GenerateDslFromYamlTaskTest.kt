@@ -1,5 +1,6 @@
 package com.dorkag.azure_devops.tasks
 
+import com.dorkag.azure_devops.KoverAnnotation
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.io.TempDir
@@ -10,6 +11,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.assertContains
 
+@KoverAnnotation
 class GenerateDslFromYamlTaskTest {
 
 

@@ -29,6 +29,7 @@ open class ResourcesConfig @Inject constructor(val objects: ObjectFactory) {
         dsl.action()
     }
 
+    @Suppress("unused")
     fun pipelines(action: PipelinesDsl.() -> Unit) {
         val dsl = PipelinesDsl(pipelines, objects)
         dsl.action()

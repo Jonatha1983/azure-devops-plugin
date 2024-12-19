@@ -1,12 +1,14 @@
 package com.dorkag.azure_devops.utils
 
-import com.dorkag.azure_devops.dto.Pipeline
+import com.dorkag.azure_devops.KoverTestAnnotation
+import com.dorkag.azure_devops.dto.flow.Pipeline
 import com.dorkag.azure_devops.dto.Pool
-import com.dorkag.azure_devops.dto.Stage
+import com.dorkag.azure_devops.dto.flow.Stage
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
+@KoverTestAnnotation
 class YamlUtilTest {
 
     @Test

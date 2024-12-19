@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
+@KoverAnnotation
 class AzureDevopsMultiPluginFunctionalTest {
 
     @field:TempDir

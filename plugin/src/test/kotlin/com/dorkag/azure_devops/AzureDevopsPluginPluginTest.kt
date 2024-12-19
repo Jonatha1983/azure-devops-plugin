@@ -10,6 +10,7 @@ import kotlin.test.assertNotNull
 /**
  * A simple unit test for the 'org.example.greeting' plugin.
  */
+@KoverTestAnnotation
 class AzureDevopsPluginPluginTest {
     @Test
     fun `plugin registers task`() {

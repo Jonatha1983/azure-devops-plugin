@@ -1,4 +1,4 @@
-package com.dorkag.azure_devops.dto
+package com.dorkag.azure_devops.dto.flow
 
 
 data class Step(

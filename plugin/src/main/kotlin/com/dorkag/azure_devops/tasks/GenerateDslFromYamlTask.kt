@@ -1,9 +1,9 @@
 package com.dorkag.azure_devops.tasks
 
-import com.dorkag.azure_devops.dto.Pipeline
-import com.dorkag.azure_devops.dto.Stage
-import com.dorkag.azure_devops.dto.Job
-import com.dorkag.azure_devops.dto.Step
+import com.dorkag.azure_devops.dto.flow.Pipeline
+import com.dorkag.azure_devops.dto.flow.Stage
+import com.dorkag.azure_devops.dto.flow.Job
+import com.dorkag.azure_devops.dto.flow.Step
 import com.dorkag.azure_devops.dto.Strategy
 import com.dorkag.azure_devops.utils.DslBuilder
 import com.dorkag.azure_devops.utils.YamlUtil
@@ -14,7 +14,7 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import java.io.File
 
-abstract class GenerateDslFromYamlTask() : DefaultTask() {
+abstract class GenerateDslFromYamlTask : DefaultTask() {
 
     @get:InputFile
     abstract val inputYaml: RegularFileProperty

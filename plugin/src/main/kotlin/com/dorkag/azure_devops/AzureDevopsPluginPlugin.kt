@@ -10,8 +10,27 @@ import com.dorkag.azure_devops.tasks.ValidatePipelineTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
+/**
+ * The Azure DevOps Pipeline plugin.
+ *
+ * This plugin is responsible for generating the Azure DevOps pipeline configuration
+ * from the Gradle configuration.
+ *
+ * The plugin is applied to the root project and subprojects.
+ *
+ * The plugin provides the following tasks:
+ * - `generatePipeline`: Generates the root Azure DevOps pipeline YAML file.
+ * - `validatePipeline`: Validates the Azure DevOps pipeline configuration.
+ * - `generateSubprojectTemplate`: Generates the Azure DevOps pipeline template for the subproject.
+ * - `convertYamlToDsl`: Generates the Azure DevOps pipeline DSL from the YAML file.
+ *
+ */
 @Suppress("unused")
 class AzureDevopsPluginPlugin : Plugin<Project> {
+
+    /**
+     * Applies the plugin to the project.
+     */
     override fun apply(project: Project) {
         if (project == project.rootProject) {
             applyToRootProject(project)

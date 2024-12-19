@@ -1,4 +1,6 @@
-package com.dorkag.azure_devops.dto
+package com.dorkag.azure_devops.dto.flow
+
+import com.dorkag.azure_devops.dto.Strategy
 
 
 data class Job(

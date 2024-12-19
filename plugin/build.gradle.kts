@@ -59,7 +59,7 @@ testing {
 gradlePlugin {
     vcsUrl = "https://github.com/Jonatha1983/azure-devops-plugin"
     // Define the plugin
-    @Suppress("unused") val azuredevops by plugins.creating {
+    @Suppress("unused", "RedundantSuppression", "UnstableApiUsage") val azuredevops by plugins.creating {
         id = "com.dorkag.azuredevops"
         implementationClass = "com.dorkag.azure_devops.AzureDevopsPluginPlugin"
         displayName = "Azure DevOps Pipelines Plugin"
@@ -76,24 +76,6 @@ gradlePlugin.testSourceSets.add(sourceSets["functionalTest"])
 }
 
 
-//kover {
-//    reports {
-//        total {
-//            xml {
-//                onCheck = true
-//            }
-//            html {
-//                onCheck = true
-//            }
-//        }
-//    }
-//    currentProject {
-//        sources {
-//            excludedSourceSets.addAll(listOf("test", "functionalTest"))
-//        }
-//
-//    }
-//}
 
 
 changelog {

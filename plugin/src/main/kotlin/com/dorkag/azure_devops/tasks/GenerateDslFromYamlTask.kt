@@ -1,163 +1,179 @@
 package com.dorkag.azure_devops.tasks
 
 import com.dorkag.azure_devops.dto.Pipeline
+import com.dorkag.azure_devops.dto.Stage
+import com.dorkag.azure_devops.dto.Job
+import com.dorkag.azure_devops.dto.Step
+import com.dorkag.azure_devops.dto.Strategy
+import com.dorkag.azure_devops.utils.DslBuilder
 import com.dorkag.azure_devops.utils.YamlUtil
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import java.io.File
 
-abstract class GenerateDslFromYamlTask : DefaultTask() {
+abstract class GenerateDslFromYamlTask() : DefaultTask() {
 
     @get:InputFile
     abstract val inputYaml: RegularFileProperty
 
-    /**
-     * Optionally, specify an output file for the generated DSL snippet.
-     * If not set, we'll default to "generated-dsl.gradle.kts"
-     */
     @get:OutputFile
-    @get:Optional
-    abstract val outputDsl: RegularFileProperty
+    val outputDsl: RegularFileProperty =
+        project.objects.fileProperty().convention(project.layout.buildDirectory.file("generated-dsl.gradle.kts"))
 
     @TaskAction
     fun generateDsl() {
         val yamlFile: File = inputYaml.get().asFile
         require(yamlFile.exists()) { "YAML file does not exist: ${yamlFile.absolutePath}" }
 
-        // Parse the pipeline YAML into your Pipeline DTO (or a similar structure)
         val pipelineDto = YamlUtil.fromYaml<Pipeline>(yamlFile.readText())
 
-        // Build the Gradle DSL lines
-        val dslSnippet = buildString {
-            appendLine("azurePipeline {")
+        val dslSnippet = DslBuilder().apply {
+            block("azurePipeline") {
+                line("name.set(\"${pipelineDto.name}\")")
 
-            // pipeline name
-            appendLine("    name.set(\"${pipelineDto.name}\")")
-
-            // triggers as a list of branches
-            pipelineDto.trigger?.let { branches ->
-                val listString = branches.joinToString(", ") { "\"$it\"" }
-                appendLine("    triggerBranches.set(listOf($listString))")
-            }
-
-            // pr as a list of branches
-            pipelineDto.pr?.let { prBranches ->
-                val prList = prBranches.joinToString(", ") { "\"$it\"" }
-                appendLine("    pullRequestTrigger {\n        branches.set(listOf($prList))\n    }")
-            }
-
-            // vmImage
-            pipelineDto.pool.vmImage.let { image ->
-                appendLine("    vmImage.set(\"$image\")")
-            }
-
-            // variables
-            pipelineDto.variables?.takeIf { it.isNotEmpty() }?.let { vars ->
-                val varAssignments = vars.entries.joinToString(", ") { "\"${it.key}\" to \"${it.value}\"" }
-                appendLine("    variables.putAll(mapOf($varAssignments))")
-            }
-
-            // Stages
-            pipelineDto.stages.let { stages ->
-                appendLine("    stages {")
-                for (stage in stages) {
-                    appendStage(stage)
+                pipelineDto.trigger?.let { branches ->
+                    val listString = branches.joinToString(", ") { "\"$it\"" }
+                    line("triggerBranches.set(listOf($listString))")
                 }
-                appendLine("    }")
+
+                pipelineDto.pr?.let { prBranches ->
+                    val prList = prBranches.joinToString(", ") { "\"$it\"" }
+                    block("pullRequestTrigger") {
+                        line("branches.set(listOf($prList))")
+                    }
+                }
+
+                pipelineDto.pool.vmImage.let { image ->
+                    line("vmImage.set(\"$image\")")
+                }
+
+                pipelineDto.variables?.takeIf { it.isNotEmpty() }?.let { variables ->
+                    val formattedVariables = generateVariableAssignment(variables)
+                    line("variables.putAll(mapOf($formattedVariables))")
+                }
+
+                block("stages") {
+                    pipelineDto.stages.forEach { stage ->
+                        appendStage(this, stage)
+                    }
+                }
             }
+        }.build()
 
-            appendLine("}") // end of azurePipeline block
-        }
-
-        // Write DSL snippet to file
         val outputFile = outputDsl.orNull?.asFile ?: project.file("generated-dsl.gradle.kts")
         outputFile.writeText(dslSnippet)
         logger.lifecycle("Generated Gradle DSL written to: ${outputFile.absolutePath}")
     }
 
-    private fun StringBuilder.appendStage(stage: com.dorkag.azure_devops.dto.Stage) {
-        appendLine("        \"${stage.stage}\" {")
-        // optionally set displayName
-        stage.displayName?.let { appendLine("            displayName.set(\"$it\")") }
+    private fun appendStage(builder: DslBuilder, stage: Stage) {
+        builder.block("\"${stage.stage}\"") {
+            stage.displayName?.let { line("displayName.set(\"$it\")") }
 
-        // dependsOn
-        stage.dependsOn?.takeIf { it.isNotEmpty() }?.let { depends ->
-            val listStr = depends.joinToString(", ") { "\"$it\"" }
-            appendLine("            dependsOn.set(listOf($listStr))")
-        }
-
-        // condition
-        stage.condition?.let { cond ->
-            appendLine("            condition.set(\"$cond\")")
-        }
-
-        // variables
-        stage.variables?.takeIf { it.isNotEmpty() }?.let { mapVars ->
-            val varAssignments = mapVars.entries.joinToString(", ") { "\"${it.key}\" to \"${it.value}\"" }
-            appendLine("            variables.putAll(mapOf($varAssignments))")
-        }
-
-        // jobs
-        if (stage.jobs != null) {
-            appendLine("            jobs {")
-            for (job in stage.jobs) {
-                appendLine("                \"${job.job}\" {")
-                job.displayName?.let { appendLine("                    displayName.set(\"$it\")") }
-                job.condition?.let { appendLine("                    condition.set(\"$it\")") }
-
-                // steps
-                if (job.steps.isNotEmpty()) {
-                    appendLine("                    steps {")
-                    job.steps.forEachIndexed { index, step ->
-                        val stepKey = "step${index + 1}"
-                        appendLine("                        \"$stepKey\" {")
-                        if (step.script != null) {
-                            appendLine("                            script.set(\"${step.script}\")")
-                            step.displayName?.let { appendLine("                            displayName.set(\"$it\")") }
-                        } else if (step.task != null) {
-                            appendLine("                            taskName.set(\"${step.task.name}\")")
-                            step.displayName?.let { appendLine("                            displayName.set(\"$it\")") }
-                            step.task.inputs?.forEach { (k, v) ->
-                                appendLine("                            inputs.put(\"$k\", \"$v\")")
-                            }
-                        }
-                        appendLine("                        }")
-                    }
-                    appendLine("                    }")
-                }
-
-                // job variables
-                job.variables?.takeIf { it.isNotEmpty() }?.let { jVars ->
-                    val varAssignments = jVars.entries.joinToString(", ") { "\"${it.key}\" to \"${it.value}\"" }
-                    appendLine("                    variables.putAll(mapOf($varAssignments))")
-                }
-
-                // strategy
-                job.strategy?.let { strat ->
-                    appendLine("                    strategy {")
-                    strat.type?.let { appendLine("                        type.set(\"$it\")") }
-                    strat.maxParallel?.let { appendLine("                        maxParallel.set($it)") }
-                    if (!strat.matrix.isNullOrEmpty()) {
-                        appendLine("                        matrix.putAll(mapOf(")
-                        strat.matrix.forEach { (matrixKey, matrixVal) ->
-                            // matrixVal is a map
-                            val innerMap = matrixVal.entries.joinToString(", ") { "\"${it.key}\" to \"${it.value}\"" }
-                            appendLine("                            \"$matrixKey\" to mapOf($innerMap),")
-                        }
-                        appendLine("                        ))")
-                    }
-                    appendLine("                    }")
-                }
-
-                appendLine("                }") // end job
+            stage.dependsOn?.takeIf { it.isNotEmpty() }?.let { depends ->
+                val listStr = depends.joinToString(", ") { "\"$it\"" }
+                line("dependsOn.set(listOf($listStr))")
             }
-            appendLine("            }") // end jobs
-        }
 
-        appendLine("        }") // end "stageName"
+            stage.condition?.let { cond ->
+                line("condition.set(\"$cond\")")
+            }
+
+            stage.variables?.takeIf { it.isNotEmpty() }?.let { variables ->
+                val formattedVariables = generateVariableAssignment(variables)
+                line("variables.putAll(mapOf($formattedVariables))")
+            }
+
+            stage.jobs?.let { jobs ->
+                block("jobs") {
+                    jobs.forEach { job ->
+                        appendJob(this, job)
+                    }
+                }
+            }
+        }
     }
+
+    private fun appendJob(builder: DslBuilder, job: Job) {
+        builder.block("\"${job.job}\"") {
+            job.displayName?.let { line("displayName.set(\"$it\")") }
+            job.condition?.let { line("condition.set(\"$it\")") }
+
+            if (job.steps.isNotEmpty()) {
+                block("steps") {
+                    job.steps.forEachIndexed { index, step ->
+                        appendStep(this, step, index)
+                    }
+                }
+            }
+
+            job.variables?.takeIf { it.isNotEmpty() }?.let { variables ->
+                val formattedVariables = generateVariableAssignment(variables)
+                line("variables.putAll(mapOf($formattedVariables))")
+            }
+
+            job.strategy?.let { strat ->
+                appendStrategy(this, strat)
+            }
+        }
+    }
+
+    private fun appendStep(builder: DslBuilder, step: Step, index: Int) {
+        val stepKey = "\"step${index + 1}\""
+        builder.block(stepKey) {
+            if (step.script != null) {
+                line("script.set(\"${step.script}\")")
+                step.displayName?.let { line("displayName.set(\"$it\")") }
+            } else if (step.task != null) {
+                line("taskName.set(\"${step.task.name}\")")
+                step.displayName?.let { line("displayName.set(\"$it\")") }
+                step.task.inputs?.forEach { (k, v) ->
+                    line("inputs.put(\"$k\", \"$v\")")
+                }
+            }
+        }
+    }
+
+    private fun appendStrategy(builder: DslBuilder, strategy: Strategy) {
+        builder.block("strategy") {
+            strategy.type?.let { line("type.set(\"$it\")") }
+            strategy.maxParallel?.let { line("maxParallel.set($it)") }
+            if (!strategy.matrix.isNullOrEmpty()) {
+                line("matrix.putAll(mapOf(")
+                // Increase indentation just inside the matrix map
+                val originalIndent = getIndentLevel(builder)
+                setIndentLevel(builder, originalIndent + 1)
+                strategy.matrix.forEach { (matrixKey, matrixVal) ->
+                    val innerMap = matrixVal.entries.joinToString(", ") { "\"${it.key}\" to \"${it.value}\"" }
+                    line("\"$matrixKey\" to mapOf($innerMap),")
+                }
+                setIndentLevel(builder, originalIndent)
+                line("))")
+            }
+        }
+    }
+
+    private fun generateVariableAssignment(variables: Map<String, String>): String {
+        return variables.entries.joinToString(", ") { "\"${it.key}\" to \"${it.value}\"" }
+    }
+
+    /**
+     * Utility functions to manipulate indentation level of DslBuilder if needed.
+     * Typically, you'd avoid doing this and rely on `block` but for a custom
+     * section like matrix maps, it can be handy.
+     */
+    private fun getIndentLevel(builder: DslBuilder): Int {
+        val field = builder::class.java.getDeclaredField("indentLevel")
+        field.isAccessible = true
+        return field.get(builder) as Int
+    }
+
+    private fun setIndentLevel(builder: DslBuilder, level: Int) {
+        val field = builder::class.java.getDeclaredField("indentLevel")
+        field.isAccessible = true
+        field.set(builder, level)
+    }
+
 }

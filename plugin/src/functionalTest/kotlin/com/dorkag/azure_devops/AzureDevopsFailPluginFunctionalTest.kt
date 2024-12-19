@@ -99,7 +99,6 @@ class AzureDevopsFailPluginFunctionalTest {
                 .build()
         }
 
-        println("Error: ${exception.message}")
         assertTrue(
             exception.message?.contains("At least one stage must be configured in the root pipeline.") == true,
             "Expected 'At least one stage must be configured' error"

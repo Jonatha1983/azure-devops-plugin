@@ -142,7 +142,7 @@ jobs:
           name: Test Report Dashboard
           reporter: java-junit
           fail-on-error: 'true'
-          path: '${{steps.download.outputs.download-path}}/*.xml'
+          path: '${{steps.download.outputs.download-path}}/**/*.xml'
 
   build-docs:
     name: Build Docs

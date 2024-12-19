@@ -11,7 +11,6 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.changelog)
     alias(libs.plugins.qodana)
-//    alias(libs.plugins.kover)
 }
 
 group = properties("azdpp.group").get()

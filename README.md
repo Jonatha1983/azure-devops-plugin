@@ -1,4 +1,4 @@
-# azure-devops-plugin
+# Azure DevOps Pipeline Plugin
 
 Azure DevOps Gradle Plugin
 

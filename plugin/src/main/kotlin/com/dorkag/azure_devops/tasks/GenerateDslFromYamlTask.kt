@@ -14,6 +14,11 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import java.io.File
 
+/**
+ * Task to generate Azure Pipeline configuration DSL from a YAML file.
+ *
+ * This task should help migrate from an existing YAML configuration to the plugin DSL configuration.
+ */
 abstract class GenerateDslFromYamlTask : DefaultTask() {
 
     @get:InputFile

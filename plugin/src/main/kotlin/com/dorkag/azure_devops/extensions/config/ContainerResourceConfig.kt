@@ -4,10 +4,10 @@ import com.dorkag.azure_devops.dto.resources.ContainerResource
 import org.gradle.api.model.ObjectFactory
 import javax.inject.Inject
 
-open class ContainerResourceConfig @Inject constructor(
-    // Removing the "val name: String" constructor param
-    val objects: ObjectFactory
-) {
+/**
+ * Configuration for a container resource.
+ */
+open class ContainerResourceConfig @Inject constructor(val objects: ObjectFactory) {
     private var image: String = ""
     private var options: String? = null
     private var ports: List<String>? = null

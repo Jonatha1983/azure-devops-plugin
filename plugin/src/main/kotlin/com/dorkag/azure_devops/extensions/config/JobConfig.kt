@@ -17,7 +17,7 @@ open class JobConfig @Inject constructor(val objects: ObjectFactory) {
         objects.mapProperty(String::class.java, String::class.java).convention(emptyMap())
 
     /**
-     * For a multi-step DSL, let's store steps as a Map of stepName -> StepConfig.
+     * For a multistep DSL, let's store steps as a Map of stepName -> StepConfig.
      * If you prefer a list, adapt it accordingly.
      */
     val steps: MapProperty<String, StepConfig> =
@@ -30,7 +30,7 @@ open class JobConfig @Inject constructor(val objects: ObjectFactory) {
 
     /**
      * A single-step convenience method. E.g.:
-     *   step("mvn clean compile")
+     *   step("mvn cleanly compile")
      */
     fun step(scriptCommand: String, name: String? = null) {
         val stepCfg = StepConfig(objects)

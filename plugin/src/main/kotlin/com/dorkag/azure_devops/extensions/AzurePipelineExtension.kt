@@ -12,6 +12,12 @@ import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import javax.inject.Inject
 
+/**
+ * Azure Pipeline extension DSL.
+ * This is the main entry point for configuring an Azure Pipeline plugin.
+ *
+ * @param objects The Gradle object factory.
+ */
 open class AzurePipelineExtension @Inject constructor(
     private val objects: ObjectFactory
 ) {

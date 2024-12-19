@@ -6,7 +6,7 @@
 The Azure DevOps Pipeline Plugin is a [Gradle](https://docs.gradle.org/current/userguide/userguide.html) plugin that
 allows you to generate Azure DevOps pipeline YAML files from your Gradle project.
 
-<img src="https://github.com/Jonatha1983/azure-devops-plugin/blob/main/.idea/icon.png" alt="Azure DevOps Pipelines Plugin" width="400"/>
+<img src=".idea/icon.png" alt="Azure DevOps Pipelines Plugin"/>
 
 ## Features
 

@@ -81,7 +81,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tests-report
-          path: ${{ github.workspace }}/plugin/build/test-results/test/*.xml
+          path: ${{ github.workspace }}/plugin/build/test-results/**/*.xml
 
       # Upload a Kover report to CodeCov
       - name: Upload Code Coverage Report

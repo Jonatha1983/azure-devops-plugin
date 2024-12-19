@@ -62,6 +62,20 @@ class AzureDevopsPluginPlugin : Plugin<Project> {
 
     private fun validateBaseConfiguration(project: Project) {
         project.afterEvaluate {
+
+            val requestedTasks = project.gradle.startParameter.taskNames
+
+            // Check if any of the requested tasks require a valid pipeline configuration,
+            // For example, if only `generatePipeline` and `validatePipeline` require validation
+            val shouldValidate =
+                requestedTasks.any { it.contains("generatePipeline") || it.contains("validatePipeline") }
+
+            if (!shouldValidate) {
+                // If we don't need to validate for the requested tasks (like when convertYamlToDsl is run),
+                // just return and skip the validation logic.
+                return@afterEvaluate
+            }
+
             val extension = project.extensions.findByType(AzurePipelineExtension::class.java)
                 ?: throw PipelineConfigurationException("AzurePipelineExtension not configured")
 

@@ -6,23 +6,25 @@
        title="Overview" id="Overview">
 
     <p>
-        The Azure DevOps Pipeline plugin is a gradle plugin that allows you to generate Azure DevOps pipelines yaml
-        files
-        from your gradle build scripts. The plugin provides a set of tasks that allow you to generate the yaml files.
+        The Azure DevOps Pipeline Gradle Plugin simplifies the management of Azure DevOps pipeline configurations by
+        allowing you to define your pipelines using Gradle DSL.<br/>
+        This plugin enables you to generate YAML pipeline
+        configurations directly from your Gradle build scripts, validate pipeline configurations, and even convert
+        existing YAML pipelines to Gradle DSL.
     </p>
 
-    <chapter title="What is &lt;product/service/concept&gt;" id="overview-chapter">
-        <p>Provide some background and context, explain choices and alternatives.</p>
+    <chapter title="Features" id="featurs-overview-chapter">
+        <list type="bullet" id="features-bullets">
+            <li>Generate Azure DevOps pipeline YAML files from Gradle DSL</li>
+            <li>Support for a multi-project builds with template inheritance</li>
+            <li>Pipeline validation task to ensure generated YAML matches expectations</li>
+            <li>YAML to DSL conversion utility for existing pipelines</li>
+        </list>
     </chapter>
-    <chapter title="Glossary" id="glossary">
-        <p>A definition list or a glossary:</p>
-        <deflist>
-            <def title="Term1">
-                This is the definition of the first term.
-            </def>
-            <def title="Term2">
-                This is the definition of the second term.
-            </def>
-        </deflist>
-    </chapter>
+    <sub>
+        <img src="azure-pipeline-plugin-logo.png" alt="azure-pipeline-plugin-logo" style="block" theme="dark"
+             border-effect="line"/>
+    </sub>
+
+
 </topic>

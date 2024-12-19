@@ -221,7 +221,7 @@ jobs:
     name: Release draft
     if: github.event_name != 'pull_request'
     needs: [ test,  inspectCode, deploy-docs ]
-    runs-on: ubuntu-20.04-16
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:

@@ -6,7 +6,7 @@ Azure DevOps Pipelines Plugin
 
 ### Added
 
-- Initial commit
+- Initial documentation and setup of the plugin
 
 ### Changed
 

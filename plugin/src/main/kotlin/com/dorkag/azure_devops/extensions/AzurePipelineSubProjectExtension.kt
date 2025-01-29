@@ -1,6 +1,7 @@
 package com.dorkag.azure_devops.extensions
 
 import com.dorkag.azure_devops.extensions.config.StageConfig
+import com.dorkag.azure_devops.utils.NameValidator
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
@@ -28,29 +29,29 @@ open class AzurePipelineSubProjectExtension @Inject constructor(val objects: Obj
     dsl.action()
   }
 
-  // Getter for internal use
   internal fun getStages(): Map<String, StageConfig> { // If using the old list-based API, convert to StageConfig
     if (stages.get().isNotEmpty()) {
       val stageMap = mutableMapOf<String, StageConfig>()
       stages.get().forEach { stageName ->
+        val validatedName = NameValidator.validateName(stageName, "stage")
         val stageConfig = objects.newInstance(StageConfig::class.java, objects)
         stageConfig.enabled.set(true)
-        stageConfig.displayName.set("Stage: $stageName") // Add a default job and step
+        stageConfig.displayName.set("Stage: $validatedName") // Add a default job and step with validated names
         stageConfig.jobs {
-          "${stageName.lowercase()}-job" {
-            displayName.set("$stageName job")
+          "${validatedName}_job" {  // Using underscore instead of hyphen
+            displayName.set("$validatedName job")
             steps {
-              "default" {
-                script.set("echo 'Executing $stageName'")
-                displayName.set("Run $stageName")
+              "${validatedName}_step" {  // Using underscore instead of hyphen
+                script.set("echo 'Executing $validatedName'")
+                displayName.set("Run $validatedName")
               }
             }
           }
         }
-        stageMap[stageName] = stageConfig
+        stageMap[validatedName] = stageConfig
       }
       return stageMap
-    } // Otherwise, use the new DSL-based configuration
+    } // Otherwise use the new DSL-based configuration
     return stagesContainer.get()
   }
 

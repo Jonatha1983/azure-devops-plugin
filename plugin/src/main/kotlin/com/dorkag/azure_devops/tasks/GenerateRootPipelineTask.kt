@@ -66,9 +66,7 @@ abstract class GenerateRootPipelineTask : DefaultTask() {
                parameters = null,
                variables = extension.variables.get().ifEmpty { null },
                stages = subprojectReferences.get().map { subproject ->
-                 Stage(
-                   stage = subproject.name, displayName = "Pipeline from ${subproject.name}", template = "${subproject.relativePath}/azure-pipelines.yml", jobs = null
-                 )
+                 Stage(template = "${subproject.relativePath}/azure-pipelines.yml")
                },
                resources = extension.getResources(),
                schedules = null,

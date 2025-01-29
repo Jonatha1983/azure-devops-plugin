@@ -89,9 +89,7 @@ class AzureDevopsMultiPluginFunctionalTest {
             pool:
               vmImage: ubuntu-20.04
             stages:
-              - stage: subproject
-                displayName: Pipeline from subproject
-                template: subproject/azure-pipelines.yml
+              - template: subproject/azure-pipelines.yml
         """.trimIndent()
 
     println("=== Generated YAML (without metadata) ===\n$strippedContent")

@@ -78,10 +78,11 @@ class AzureDevopsSimplePluginFunctionalTest {
 
         println("=== Gradle Build Output ===\n${result.output}")
 
-        val yamlContent = expectedRootPipelineFile.readText().trim()
-        println("=== Generated YAML ===\n$yamlContent")
+        val yamlContent = expectedRootPipelineFile.readText()
+        // Strip metadata comments before comparison
+        val strippedContent = stripMetadataComments(yamlContent).trim()
+        println("=== Generated YAML (without metadata) ===\n$strippedContent")
 
-        // If your plugin always uppercases "STRING", change the test expectation to match
         val expectedContent = """
         name: Test Pipeline
         trigger:
@@ -113,7 +114,7 @@ class AzureDevopsSimplePluginFunctionalTest {
                     displayName: Validate Generated Pipeline
     """.trimIndent()
 
-        assertEquals(expectedContent, yamlContent, "Generated YAML content does not match expected content.")
+        assertEquals(expectedContent, strippedContent, "Generated YAML content does not match expected content.")
         assertEquals(TaskOutcome.SUCCESS, result.task(":generatePipeline")?.outcome)
     }
 }

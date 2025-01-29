@@ -86,15 +86,18 @@ class AzureDevOpsDockerTest {
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":generatePipeline")?.outcome)
 
-        val generatedYaml = projectDir.resolve("azure-pipelines.yml").readText().trim()
+        val generatedYaml = projectDir.resolve("azure-pipelines.yml").readText()
+        // Strip metadata comments from generated YAML before comparison
+        val strippedGeneratedYaml = stripMetadataComments(generatedYaml).trim()
         val expectedYaml = expected.trim()
 
-        println("=== Generated YAML ===\n$generatedYaml")
+        println("=== Generated YAML (without metadata) ===\n$strippedGeneratedYaml")
         println("=== Expected YAML ===\n$expectedYaml")
 
-        assertEquals(expectedYaml, generatedYaml, "Generated YAML content does not match expected content.")
+        assertEquals(expectedYaml, strippedGeneratedYaml,
+            "Generated YAML content (excluding metadata) does not match expected content.")
 
-        // Additional substring checks
+        // Additional substring checks (these should still work since the content is still there)
         assertTrue(generatedYaml.contains("DockerBuildPipeline"), "Pipeline name not found")
         assertTrue(generatedYaml.contains("vmImage: ubuntu-latest"), "vmImage not found")
         assertTrue(

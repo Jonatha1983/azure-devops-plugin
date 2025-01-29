@@ -11,17 +11,26 @@ class GenerateRootPipelineTaskTest {
   fun `test generate pipeline YAML`() {
     val project = ProjectBuilder.builder().build()
 
-    // Use 'register' instead of 'create', and then retrieve the instance with 'get()'
+    // Register and retrieve the task instance
     val generateTask = project.tasks.register("generatePipeline", GenerateRootPipelineTask::class.java).get()
 
-    generateTask.extension = AzurePipelineExtension(project.objects).apply {
+    // Create the extension instance
+    val extension = AzurePipelineExtension(project.objects).apply {
       name.set("TestPipeline")
     }
 
+    // Assign the extension *via* the property
+    generateTask.extensionProperty.set(extension)
+
+    // Optionally override the output file if you want a custom path:
+    // generateTask.pipelineYaml.set(project.layout.projectDirectory.file("my-pipeline.yml"))
+
+    // Execute the task action
     generateTask.generate()
 
-    val outputFile = project.file("azure-pipelines.yml")
-    assertTrue(outputFile.exists())
+    // Retrieve the actual file path from the task property
+    val outputFile = generateTask.pipelineYaml.get().asFile
+    assertTrue(outputFile.exists(), "Expected the YAML file to be created.")
     assertTrue(outputFile.readText().contains("name: TestPipeline"))
   }
 }

@@ -1,34 +1,83 @@
 package com.dorkag.azure_devops.tasks
 
+
 import com.dorkag.azure_devops.extensions.AzurePipelineSubProjectExtension
 import org.gradle.testfixtures.ProjectBuilder
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
 class GenerateSubprojectTemplateTaskTest {
+  @Test
+  fun `test generate subproject template with stages`() {
+    val project = ProjectBuilder.builder().build()
+    val generateTask = project.tasks.register(
+      "generateSubTemplate", GenerateSubprojectTemplateTask::class.java
+    ).get()
+
+    // Configure the extension with some test stages
+    val extension = AzurePipelineSubProjectExtension(project.objects).apply {
+      stages {
+        "Build" {
+          enabled.set(true)
+          displayName.set("Build Stage")
+          jobs {
+            "buildJob" {
+              steps {
+                "build" {
+                  script.set("./gradlew build")
+                  displayName.set("Build Project")
+                }
+              }
+            }
+          }
+        }
+        "Test" {
+          enabled.set(true)
+          displayName.set("Test Stage")
+          jobs {
+            "testJob" {
+              steps {
+                "test" {
+                  script.set("./gradlew test")
+                  displayName.set("Run Tests")
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    generateTask.subProjectExtensionProperty.set(extension)
+    generateTask.projectName.set("test-project")
+
+    // Execute the task logic
+    generateTask.generateSubTemplate()
+
+    // Check the default output file
+    val outputFile = generateTask.subprojectYaml.get().asFile
+    assertTrue(outputFile.exists(), "Expected the file to be created")
+    val content = outputFile.readText()
+    assertTrue(content.contains("Build"), "Expected 'Build' in the YAML output")
+    assertTrue(content.contains("Test"), "Expected 'Test' in the YAML output")
+    assertTrue(content.contains("buildJob"), "Expected 'buildJob' in the YAML output")
+    assertTrue(content.contains("testJob"), "Expected 'testJob' in the YAML output")
+    assertTrue(content.contains("./gradlew build"), "Expected build command in the YAML output")
+    assertTrue(content.contains("./gradlew test"), "Expected test command in the YAML output")
+  }
 
   @Test
   fun `test generate subproject template with no stages`() {
     val project = ProjectBuilder.builder().build()
-    val generateTask = project.tasks.register("generateSubTemplate", GenerateSubprojectTemplateTask::class.java).get()
-    generateTask.subProjectExtension = AzurePipelineSubProjectExtension(project.objects)
+    val generateTask = project.tasks.register(
+      "generateSubTemplate", GenerateSubprojectTemplateTask::class.java
+    ).get()
 
-    generateTask.generateSubTemplate()
-  }
-
-  @Test
-  fun `test generate subproject template with stages`() {
-    val project = ProjectBuilder.builder().build()
-    val generateTask = project.tasks.register("generateSubTemplate", GenerateSubprojectTemplateTask::class.java).get()
-    generateTask.subProjectExtension = AzurePipelineSubProjectExtension(project.objects).apply {
-      stages.set(listOf("stage1", "stage2"))
-    }
+    val extension = AzurePipelineSubProjectExtension(project.objects)
+    generateTask.subProjectExtensionProperty.set(extension)
 
     generateTask.generateSubTemplate()
 
-    val outputFile = project.file("azure-pipelines.yml")
-    assertTrue(outputFile.exists())
-    assertTrue(outputFile.readText().contains("stage1"))
-    assertTrue(outputFile.readText().contains("stage2"))
+    val outputFile = generateTask.subprojectYaml.get().asFile
+    assertTrue(!outputFile.exists(), "Expected the file NOT to be created if no stages")
   }
 }

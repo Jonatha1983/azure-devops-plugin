@@ -1,10 +1,10 @@
 package com.dorkag.azure_devops.tasks
 
+import com.dorkag.azure_devops.dto.Strategy
+import com.dorkag.azure_devops.dto.flow.Job
 import com.dorkag.azure_devops.dto.flow.Pipeline
 import com.dorkag.azure_devops.dto.flow.Stage
-import com.dorkag.azure_devops.dto.flow.Job
 import com.dorkag.azure_devops.dto.flow.Step
-import com.dorkag.azure_devops.dto.Strategy
 import com.dorkag.azure_devops.utils.DslBuilder
 import com.dorkag.azure_devops.utils.YamlUtil
 import org.gradle.api.DefaultTask
@@ -131,9 +131,9 @@ abstract class GenerateDslFromYamlTask : DefaultTask() {
         line("script.set(\"${step.script}\")")
         step.displayName?.let { line("displayName.set(\"$it\")") }
       } else if (step.task != null) {
-        line("taskName.set(\"${step.task.name}\")")
+        line("taskName.set(\"${step.task}\")")
         step.displayName?.let { line("displayName.set(\"$it\")") }
-        step.task.inputs?.forEach { (k, v) ->
+        step.inputs?.forEach { (k, v) ->
           line("inputs.put(\"$k\", \"$v\")")
         }
       }

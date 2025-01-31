@@ -11,17 +11,17 @@ import java.io.File
 @KoverAnnotation
 class AzureDevOpsMultipleStagesWithJobs {
 
-    @field:TempDir
-    lateinit var projectDir: File
+  @field:TempDir
+  lateinit var projectDir: File
 
-    private val buildFile by lazy { projectDir.resolve("build.gradle.kts") }
+  private val buildFile by lazy { projectDir.resolve("build.gradle.kts") }
 
-    @Test
-    fun `generates pipeline with multiple stages and jobs`() {
-        projectDir.resolve("settings.gradle.kts").writeText("rootProject.name = \"azure-devops-plugin-test\"")
+  @Test
+  fun `generates pipeline with multiple stages and jobs`() {
+    projectDir.resolve("settings.gradle.kts").writeText("rootProject.name = \"azure-devops-plugin-test\"")
 
-        buildFile.writeText(
-            """
+    buildFile.writeText(
+      """
         plugins {
             id("com.dorkag.azuredevops")
         }
@@ -31,19 +31,19 @@ class AzureDevOpsMultipleStagesWithJobs {
             vmImage.set("ubuntu-latest")
 
             stages {
-                "Build" {
+                stage("Build") {
                     enabled.set(true)
                     jobs {
-                        "Compile" {
+                        job("Compile") {
                             step("./gradlew compileJava", "Compile Java")
                         }
                     }
                 }
-                "Test" {
+                stage("Test") {
                     enabled.set(true)
                     dependsOn.set(listOf("Build"))
                     jobs {
-                        "UnitTest" {
+                        job("UnitTest") {
                             step("./gradlew test", "Run Unit Tests")
                         }
                     }
@@ -51,20 +51,18 @@ class AzureDevOpsMultipleStagesWithJobs {
             }
         }
         """.trimIndent()
-        )
+    )
 
-        val result =
-            GradleRunner.create().withPluginClasspath().withArguments("generatePipeline").withProjectDir(projectDir)
-                .forwardOutput().build()
+    val result = GradleRunner.create().withPluginClasspath().withArguments("generatePipeline").withProjectDir(projectDir).forwardOutput().build()
 
-        assertEquals(TaskOutcome.SUCCESS, result.task(":generatePipeline")?.outcome)
+    assertEquals(TaskOutcome.SUCCESS, result.task(":generatePipeline")?.outcome)
 
-        val pipelineYaml = projectDir.resolve("azure-pipelines.yml").readText()
-        println("Generated multi-stage pipeline:\n$pipelineYaml")
+    val pipelineYaml = projectDir.resolve("azure-pipelines.yml").readText()
+    println("Generated multi-stage pipeline:\n$pipelineYaml")
 
-        assertTrue(pipelineYaml.contains("Build"), "Should contain a 'Build' stage in YAML")
-        assertTrue(pipelineYaml.contains("Test"), "Should contain a 'Test' stage in YAML")
-        assertTrue(pipelineYaml.contains("Compile Java"), "Should have compile job steps")
-        assertTrue(pipelineYaml.contains("Run Unit Tests"), "Should have test job steps")
-    }
+    assertTrue(pipelineYaml.contains("Build"), "Should contain a 'Build' stage in YAML")
+    assertTrue(pipelineYaml.contains("Test"), "Should contain a 'Test' stage in YAML")
+    assertTrue(pipelineYaml.contains("Compile Java"), "Should have compile job steps")
+    assertTrue(pipelineYaml.contains("Run Unit Tests"), "Should have test job steps")
+  }
 }

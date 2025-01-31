@@ -42,13 +42,13 @@ class MultiProjectAllSubprojectsFunctionalTest {
                 vmImage.set("ubuntu-20.04")
 
                 stages {
-                    "Build" {
+                    stage("Build") {
                         displayName.set("Root Build Stage")
                         jobs {
-                            "rootBuildJob" {
+                            job("rootBuildJob") {
                                 displayName.set("RootBuildJob")
                                 steps {
-                                    "rootBuildStep" {
+                                    step("rootBuildStep") {
                                         script.set("./gradlew build")
                                         displayName.set("Root Build Step")
                                     }
@@ -71,7 +71,9 @@ class MultiProjectAllSubprojectsFunctionalTest {
             
             // subA reuses the 'Build' stage from root
             azurePipeline {
-                stages.set(listOf("Build"))
+                stages {
+                    declaredStage("Build")
+                }
             }
             """.trimIndent()
     )
@@ -84,9 +86,11 @@ class MultiProjectAllSubprojectsFunctionalTest {
                 id("com.dorkag.azuredevops")
             }
             
-            // subB reuses the 'Build' stage from root
+            
             azurePipeline {
-                stages.set(listOf("Build"))
+                stages {
+                  declaredStage("Build")
+                }
             }
             """.trimIndent()
     )
@@ -107,7 +111,7 @@ class MultiProjectAllSubprojectsFunctionalTest {
     // (It may also have an "include-subA" or "include-subB" stage if your code references subprojects.)
     println(rootContent)
     assertTrue(rootContent.contains("Root Pipeline"), "Expected root pipeline to mention 'Root Build Stage'")
-    
+
     // subA
     val subAPipeline = subADir.resolve("azure-pipelines.yml")
     assertTrue(subAPipeline.exists(), "subA azure-pipelines.yml should be generated")

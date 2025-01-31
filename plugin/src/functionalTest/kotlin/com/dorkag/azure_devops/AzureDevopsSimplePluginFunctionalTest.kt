@@ -10,19 +10,19 @@ import java.io.File
 @KoverAnnotation
 class AzureDevopsSimplePluginFunctionalTest {
 
-    @field:TempDir
-    lateinit var projectDir: File
+  @field:TempDir
+  lateinit var projectDir: File
 
-    private val buildFile by lazy { projectDir.resolve("build.gradle.kts") }
-    private val settingsFile by lazy { projectDir.resolve("settings.gradle.kts") }
-    private val expectedRootPipelineFile by lazy { projectDir.resolve("azure-pipelines.yml") }
+  private val buildFile by lazy { projectDir.resolve("build.gradle.kts") }
+  private val settingsFile by lazy { projectDir.resolve("settings.gradle.kts") }
+  private val expectedRootPipelineFile by lazy { projectDir.resolve("azure-pipelines.yml") }
 
-    @Test
-    fun `generates root pipeline file`() {
-        settingsFile.writeText("rootProject.name = \"azure-devops-plugin-test\"")
+  @Test
+  fun `generates root pipeline file`() {
+    settingsFile.writeText("rootProject.name = \"azure-devops-plugin-test\"")
 
-        buildFile.writeText(
-            """
+    buildFile.writeText(
+      """
         plugins {
             id("com.dorkag.azuredevops")
         }
@@ -48,15 +48,15 @@ class AzureDevopsSimplePluginFunctionalTest {
             variables.putAll(mapOf("var1" to "value1", "var2" to "value2"))
 
             stages {
-                "ValidatePipeline" {
+                stage("ValidatePipeline") {
                     enabled.set(true)
                     displayName.set("Validate Pipeline")
                     condition.set("always()")   // Force a condition so it appears in YAML
                     jobs {
-                        "Validate" {
+                        job("Validate") {
                             displayName.set("Validation Job")
                             steps {
-                                "Step1" {
+                                step("Step1") {
                                     script.set("./gradlew validatePipeline")
                                     displayName.set("Validate Generated Pipeline")
                                 }
@@ -67,23 +67,17 @@ class AzureDevopsSimplePluginFunctionalTest {
             }
         }
         """.trimIndent()
-        )
+    )
 
-        val result = GradleRunner.create()
-            .withPluginClasspath()
-            .withArguments("generatePipeline")
-            .withProjectDir(projectDir)
-            .forwardOutput()
-            .build()
+    val result = GradleRunner.create().withPluginClasspath().withArguments("generatePipeline").withProjectDir(projectDir).forwardOutput().build()
 
-        println("=== Gradle Build Output ===\n${result.output}")
+    println("=== Gradle Build Output ===\n${result.output}")
 
-        val yamlContent = expectedRootPipelineFile.readText()
-        // Strip metadata comments before comparison
-        val strippedContent = stripMetadataComments(yamlContent).trim()
-        println("=== Generated YAML (without metadata) ===\n$strippedContent")
+    val yamlContent = expectedRootPipelineFile.readText() // Strip metadata comments before comparison
+    val strippedContent = stripMetadataComments(yamlContent).trim()
+    println("=== Generated YAML (without metadata) ===\n$strippedContent")
 
-        val expectedContent = """
+    val expectedContent = """
         name: Test Pipeline
         trigger:
           - main
@@ -114,7 +108,7 @@ class AzureDevopsSimplePluginFunctionalTest {
                     displayName: Validate Generated Pipeline
     """.trimIndent()
 
-        assertEquals(expectedContent, strippedContent, "Generated YAML content does not match expected content.")
-        assertEquals(TaskOutcome.SUCCESS, result.task(":generatePipeline")?.outcome)
-    }
+    assertEquals(expectedContent, strippedContent, "Generated YAML content does not match expected content.")
+    assertEquals(TaskOutcome.SUCCESS, result.task(":generatePipeline")?.outcome)
+  }
 }

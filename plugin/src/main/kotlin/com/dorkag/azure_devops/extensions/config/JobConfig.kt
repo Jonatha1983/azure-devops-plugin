@@ -1,6 +1,5 @@
 package com.dorkag.azure_devops.extensions.config
 
-import com.dorkag.azure_devops.utils.NameValidator
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
@@ -41,11 +40,13 @@ open class JobConfig @Inject constructor(val objects: ObjectFactory) {
     steps.put("step${steps.get().size + 1}", stepCfg)
   }
 
-  class StepsDsl(private val objects: ObjectFactory, private val steps: MapProperty<String, StepConfig>) {
-    operator fun String.invoke(configuration: StepConfig.() -> Unit) {
-      val stepName = NameValidator.validateName(this, "step")
-      val stepCfg = objects.newInstance(StepConfig::class.java)
-      stepCfg.configuration()
+  open class StepsDsl(private val objects: ObjectFactory, private val steps: MapProperty<String, StepConfig>) {
+    /**
+     * step("StepName") { ... }
+     */
+    fun step(stepName: String, configure: StepConfig.() -> Unit) {
+      val stepCfg = objects.newInstance(StepConfig::class.java, objects)
+      stepCfg.configure()
       steps.put(stepName, stepCfg)
     }
   }

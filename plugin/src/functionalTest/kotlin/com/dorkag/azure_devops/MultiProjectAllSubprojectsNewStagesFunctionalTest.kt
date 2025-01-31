@@ -41,13 +41,13 @@ class MultiProjectAllSubprojectsNewStagesFunctionalTest {
                 name.set("Root Pipeline")
                 vmImage.set("ubuntu-latest")
                 stages {
-                    "Build" {
+                    stage("Build") {
                         displayName.set("Root Build Stage")
                         jobs {
-                            "rootBuildJob" {
+                            job("rootBuildJob") {
                                 displayName.set("RootBuildJob")
                                 steps {
-                                    "rootBuildStep" {
+                                    step("rootBuildStep") {
                                         script.set("./gradlew build")
                                         displayName.set("Root Build Step")
                                     }
@@ -70,7 +70,23 @@ class MultiProjectAllSubprojectsNewStagesFunctionalTest {
             
             // subA reuses 'Build' + declares new 'TestA'
             azurePipeline {
-                stages.set(listOf("Build", "TestA"))
+                stages {
+                    declaredStage("Build")
+                    stage("TestA") {
+                         displayName.set("TestA Stage")
+                          jobs {
+                              job("TestAJob") {
+                                  displayName.set("TestAJob")
+                                  steps {
+                                      step("TestAStep") {
+                                          script.set("./gradlew test")
+                                          displayName.set("TestA Step")
+                                      }
+                                  }
+                              }
+                          }   
+                    }
+                }
             }
             """.trimIndent()
     )
@@ -85,17 +101,28 @@ class MultiProjectAllSubprojectsNewStagesFunctionalTest {
             
             // subB reuses 'Build' + declares new 'TestB'
             azurePipeline {
-                stages.set(listOf("Build", "TestB"))
+                stages {
+                  declaredStage("Build")
+                  stage("TestB") { 
+                      displayName.set("TestB Stage")
+                      jobs {
+                          job("TestBJob") {
+                              displayName.set("TestBJob")
+                              steps {
+                                  step("TestBStep") {
+                                      script.set("./gradlew test")
+                                      displayName.set("TestB Step")
+                                  }
+                              }
+                          }
+                      }
+                  }
+              }
             }
             """.trimIndent()
     )
 
-    val result = GradleRunner.create()
-      .withProjectDir(projectDir)
-      .withArguments("generatePipeline")
-      .withPluginClasspath()
-      .forwardOutput()
-      .build()
+    val result = GradleRunner.create().withProjectDir(projectDir).withArguments("generatePipeline").withPluginClasspath().forwardOutput().build()
 
     assertEquals(TaskOutcome.SUCCESS, result.task(":generatePipeline")?.outcome)
 

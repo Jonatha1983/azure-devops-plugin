@@ -38,13 +38,13 @@ class MultiProjectSomeSubprojectsFunctionalTest {
             azurePipeline {
                 name.set("Root Pipeline")
                 stages {
-                    "Build" {
+                    stage("Build") {
                         displayName.set("Root Build Stage")
                         jobs {
-                            "rootBuildJob" {
+                            job("rootBuildJob") {
                                 displayName.set("RootBuildJob")
                                 steps {
-                                    "rootBuildStep" {
+                                    step("rootBuildStep") {
                                         script.set("./gradlew build")
                                         displayName.set("Root Build Step")
                                     }
@@ -66,7 +66,9 @@ class MultiProjectSomeSubprojectsFunctionalTest {
             }
             
             azurePipeline {
-                stages.set(listOf("Build"))
+                stages {
+                   declaredStage("Build")
+                }
             }
             """.trimIndent()
     )

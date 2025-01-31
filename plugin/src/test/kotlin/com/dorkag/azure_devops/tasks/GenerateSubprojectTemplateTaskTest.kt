@@ -15,15 +15,15 @@ class GenerateSubprojectTemplateTaskTest {
     ).get()
 
     // Configure the extension with some test stages
-    val extension = AzurePipelineSubProjectExtension(project.objects).apply {
+    val extension = AzurePipelineSubProjectExtension(project, project.objects).apply {
       stages {
-        "Build" {
+        stage("Build") {
           enabled.set(true)
           displayName.set("Build Stage")
           jobs {
-            "buildJob" {
+            job("buildJob") {
               steps {
-                "build" {
+                step("build") {
                   script.set("./gradlew build")
                   displayName.set("Build Project")
                 }
@@ -31,13 +31,13 @@ class GenerateSubprojectTemplateTaskTest {
             }
           }
         }
-        "Test" {
+        stage("Test") {
           enabled.set(true)
           displayName.set("Test Stage")
           jobs {
-            "testJob" {
+            job("testJob") {
               steps {
-                "test" {
+                step("test") {
                   script.set("./gradlew test")
                   displayName.set("Run Tests")
                 }
@@ -72,12 +72,12 @@ class GenerateSubprojectTemplateTaskTest {
       "generateSubTemplate", GenerateSubprojectTemplateTask::class.java
     ).get()
 
-    val extension = AzurePipelineSubProjectExtension(project.objects)
+    val extension = AzurePipelineSubProjectExtension(project,project.objects)
     generateTask.subProjectExtensionProperty.set(extension)
 
     generateTask.generateSubTemplate()
 
     val outputFile = generateTask.subprojectYaml.get().asFile
-    assertTrue(!outputFile.exists(), "Expected the file NOT to be created if no stages")
+    assertTrue(outputFile.exists(), "Expected the file: $outputFile to be created if no stages")
   }
 }

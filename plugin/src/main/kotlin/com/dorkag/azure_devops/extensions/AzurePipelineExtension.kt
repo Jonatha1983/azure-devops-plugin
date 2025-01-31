@@ -8,6 +8,7 @@ import com.dorkag.azure_devops.extensions.config.ScheduleConfig
 import com.dorkag.azure_devops.extensions.config.StageConfig
 import com.dorkag.azure_devops.extensions.pipeline.PipelineParameter
 import com.dorkag.azure_devops.utils.NameValidator
+import com.dorkag.azure_devops.utils.NameValidator.EntityType.STAGE
 import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.model.ObjectFactory
@@ -28,6 +29,7 @@ open class AzurePipelineExtension @Inject constructor(private val objects: Objec
   val trigger: ListProperty<String> = objects.listProperty(String::class.java).convention(emptyList())
   val vmImage: Property<String> = objects.property(String::class.java).convention("")
   val variables: MapProperty<String, String> = objects.mapProperty(String::class.java, String::class.java).convention(emptyMap())
+
 
   // Triggers
   val pr: Property<PullRequestTriggerConfig> = objects.property(PullRequestTriggerConfig::class.java)
@@ -57,13 +59,22 @@ open class AzurePipelineExtension @Inject constructor(private val objects: Objec
     return stages.get()
   }
 
-  class StagesDsl(private val objects: ObjectFactory, private val stages: MapProperty<String, StageConfig>) {
-    operator fun String.invoke(configuration: StageConfig.() -> Unit) {
-      val stageName = NameValidator.validateName(this, "stage")
-      val stage = objects.newInstance(StageConfig::class.java, objects)
-      stage.enabled.set(true)
-      stage.configuration()
-      stages.put(stageName, stage)
+  /**
+   * DSL for:
+   *   stages {
+   *      register("Build") {
+   *         displayName = "Build Stage"
+   *         ...
+   *      }
+   *   }
+   */
+  open class StagesDsl(private val objects: ObjectFactory, private val stages: MapProperty<String, StageConfig>) {
+    fun stage(stageName: String, configure: StageConfig.() -> Unit) {
+      NameValidator.validateName(stageName, STAGE)
+      val stageCfg = objects.newInstance(StageConfig::class.java, objects)
+      stageCfg.enabled.set(true)
+      stageCfg.configure()
+      stages.put(stageName, stageCfg)
     }
   }
 

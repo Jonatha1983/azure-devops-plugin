@@ -39,11 +39,11 @@ class MultiProjectSomeSubprojectsNewStagesFunctionalTest {
             azurePipeline {
                 name.set("Root Pipeline")
                 stages {
-                    "Build" {
+                    stage("Build") {
                         jobs {
-                            "rootBuildJob" {
+                            job("rootBuildJob") {
                                 steps {
-                                    "rootBuildStep" {
+                                    step("rootBuildStep") {
                                         script.set("./gradlew build")
                                         displayName.set("Root Build Step")
                                     }
@@ -65,7 +65,20 @@ class MultiProjectSomeSubprojectsNewStagesFunctionalTest {
             }
 
             azurePipeline {
-                stages.set(listOf("Build", "TestA"))
+                stages {
+                  declaredStage("Build")
+            
+                  stage("TestA") {
+                       jobs { 
+                          job("testJobA") { 
+                              steps { 
+                                  step("someStep") { script.set("echo 'TestA'") 
+                                  }
+                              }
+                          }
+                       }
+                  }
+                }
             }
             """.trimIndent()
     )

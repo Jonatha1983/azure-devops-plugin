@@ -1,45 +1,76 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic
-        SYSTEM "https://resources.jetbrains.com/writerside/1.0/xhtml-entities.dtd">
+  SYSTEM "https://resources.jetbrains.com/writerside/1.0/xhtml-entities.dtd">
 <topic xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/topic.v2.xsd"
        title="Tasks" id="Tasks">
 
+  <!--
+  generateRootPipeline
+
+Generates a root azure-pipelines.yml from the root DSL. If subprojects apply the plugin, references them as templates.
+
+generateSubprojectTemplate
+
+For each subproject that applies the plugin, run:
+  -->
+  <chapter title="Tasks" id="tasks-tasks">
     <p>
-        A reference article is information-oriented.
-        It provides a structured description of a product:
-        its APIs, classes, functions, configuration options, actions, and so on.
-        Start with a summary of what this reference article is about, and what the items you are describing are used for.
+      The plugin provides the following tasks:
     </p>
+    <list type="bullet" id="tasks-list">
+      <li>
+        <b>generateRootPipeline</b>
+        <p>
+          Generates a root <code>azure-pipelines.yml</code> from the root DSL. If subprojects apply the plugin, reference them as templates.
+        </p>
+      </li>
+      <li>
+        <b>generateSubprojectTemplate</b>
+        <p>
+          For each subproject that applies the plugin, run:
+        </p>
+      </li>
 
-    <chapter title="Command" id="command">
-        <p>Syntax:</p>
+      <!--
+      Generates subproj/azure-pipelines.yml snippet or standalone pipeline.
 
-        <code-block lang="shell">
-            cmd [OPTIONS]
-        </code-block>
-    </chapter>
+  generatePipeline
 
-    <chapter title="Options" id="options">
-        <p>Describe what each option is used for:</p>
+  A convenience aggregator that depends on both generateRootPipeline and each subproject’s generateSubprojectTemplate. If only subprojects apply the plugin, or only root does, it acts accordingly.
 
-        <deflist type="medium">
-            <def title="-o, --open">
-                Opens a file.
-            </def>
-            <def title="-c, --close">
-                Closes a file.
-            </def>
-            <def title="-v --version">
-                Displays version information.
-            </def>
-            <def title="-h, --help">
-                Displays help.
-            </def>
-        </deflist>
-    </chapter>
+  validatePipeline
 
-    <seealso>
-        <!--Provide links to related how-to guides, overviews, and tutorials.-->
-    </seealso>
+  Validates that each stage has at least one job, each job has at least one step, etc. Fails the build if DSL is incomplete.
+
+  convertYamlToDsl
+
+  If you already have an Azure Pipelines YAML, you can convert it to DSL stubs:
+      -->
+
+      <li>
+        <b>generatePipeline</b>
+        <p>
+          A convenience aggregator that depends on both <code>generateRootPipeline</code> and each subproject’s <code>generateSubprojectTemplate</code>. If only subprojects apply
+          the plugin, or only root does, it acts accordingly.
+        </p>
+      </li>
+      <li>
+        <b>validatePipeline</b>
+        <p>
+          Validates that each stage has at least one job, each job has at least one step, etc. Fails the build if DSL is incomplete.
+        </p>
+      </li>
+      <li>
+        <b>convertYamlToDsl</b>
+        <p>
+          If you already have an Azure Pipelines YAML, you can convert it to DSL stubs:
+        </p>
+      </li>
+
+
+    </list>
+
+
+  </chapter>
 </topic>

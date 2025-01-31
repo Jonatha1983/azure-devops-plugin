@@ -39,14 +39,14 @@ class AzureDevopsMultiPluginFunctionalTest {
                 vmImage.set("ubuntu-20.04")
 
                 stages {
-                    "Build" {
+                    stage("Build") {
                         enabled.set(true)
                         displayName.set("Build Project")
                         jobs {
-                            "BuildJob" {
+                            job("BuildJob") {
                                 displayName.set("Build All Projects")
                                 steps {
-                                    "BuildStep" {
+                                    step("BuildStep") {
                                         script.set("./gradlew build")
                                         displayName.set("Run Gradle Build")
                                     }
@@ -68,7 +68,9 @@ class AzureDevopsMultiPluginFunctionalTest {
             }
 
             azurePipeline {
-                stages.set(listOf("Build", "Test"))
+                stages {
+                  declaredStage("Build")
+                }
             }
         """.trimIndent()
     )

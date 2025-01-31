@@ -36,13 +36,13 @@ class SingleProjectFunctionalTest {
                 vmImage.set("ubuntu-latest")
 
                 stages {
-                    "Build" {
+                    stage("Build") {
                         displayName.set("Build the project")
                         jobs {
-                            "buildJob" {
+                            job("buildJob") {
                                 displayName.set("BuildJob")
                                 steps {
-                                    "runBuild" {
+                                    step("runBuild") {
                                         script.set("./gradlew build")
                                         displayName.set("Run Build")
                                     }

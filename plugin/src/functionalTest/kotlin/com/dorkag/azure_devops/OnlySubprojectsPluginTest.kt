@@ -49,12 +49,12 @@ class OnlySubprojectsPluginTest {
                 vmImage.set("ubuntu-latest")
                 
                 stages {
-                    "Build" {
+                    stage("Build") {
                         displayName.set("Build API")
                         jobs {
-                            "buildJob" {
+                            job("buildJob") {
                                 steps {
-                                    "build" {
+                                    step("build") {
                                         script.set("./gradlew :api:build")
                                         displayName.set("Build API Module")
                                     }
@@ -127,12 +127,12 @@ class OnlySubprojectsPluginTest {
                 vmImage.set("ubuntu-latest")
                 
                 stages {
-                    "Build" {
+                    stage("Build") {
                         displayName.set("Build API")
                         jobs {
-                            "buildJob" {
+                            job("buildJob") {
                                 steps {
-                                    "build" {
+                                    step("build") {
                                         script.set("./gradlew :api:build")
                                         displayName.set("Build API Module")
                                     }
@@ -159,12 +159,12 @@ class OnlySubprojectsPluginTest {
                 vmImage.set("ubuntu-latest")
                 
                 stages {
-                    "Build" {
+                    stage("Build") {
                         displayName.set("Build Web")
                         jobs {
-                            "buildJob" {
+                            job("buildJob") {
                                 steps {
-                                    "build" {
+                                    step("build") {
                                         script.set("./gradlew :web:build")
                                         displayName.set("Build Web Module")
                                     }

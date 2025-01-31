@@ -3,13 +3,18 @@
 <buildprofiles xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/build-profiles.xsd"
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
+  <variables>
+    <primary-color>blueberry</primary-color>
+    <link-color>#5CEDE8</link-color>
+    <custom-favicons>azure-pipeline-plugin-logo.png</custom-favicons>
+    <header-logo>gradle-azure-logo.svg</header-logo>
+    <resizable-sidebar>true</resizable-sidebar>
+
+  </variables>
+  <build-profile instance="adpp">
     <variables>
-        <primary-color>blueberry</primary-color>
+      <noindex-content>true</noindex-content>
     </variables>
-    <build-profile instance="adpp">
-        <variables>
-            <noindex-content>true</noindex-content>
-        </variables>
-    </build-profile>
+  </build-profile>
 
 </buildprofiles>

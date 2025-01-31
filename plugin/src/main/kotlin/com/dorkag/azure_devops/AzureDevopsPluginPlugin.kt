@@ -7,8 +7,10 @@ import com.dorkag.azure_devops.tasks.GenerateDslFromYamlTask
 import com.dorkag.azure_devops.tasks.GenerateRootPipelineTask
 import com.dorkag.azure_devops.tasks.GenerateSubprojectTemplateTask
 import com.dorkag.azure_devops.tasks.ValidatePipelineTask
+import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.util.GradleVersion
 
 /**
  * Azure DevOps Pipeline plugin.
@@ -26,6 +28,8 @@ import org.gradle.api.Project
 class AzureDevopsPluginPlugin : Plugin<Project> {
 
   override fun apply(project: Project) {
+    checkGradleVersion()
+
     if (project == project.rootProject) {
       applyToRootProject(project)
       validateRootAfterEvaluate(project)
@@ -34,89 +38,96 @@ class AzureDevopsPluginPlugin : Plugin<Project> {
       ensureRootCoordination(project)
     }
 
-    // Common task for all projects (root or subproject)
+    // Common task
     project.tasks.register("convertYamlToDsl", GenerateDslFromYamlTask::class.java) {
       it.group = "Azure DevOps"
       it.description = "Generate Gradle DSL from an existing Azure DevOps YAML."
     }
   }
 
-  private fun ensureRootCoordination(subproject: Project) { // Only do this once for the first subproject that applies the plugin
-    if (!subproject.rootProject.tasks.names.contains("generatePipeline")) {
-      subproject.rootProject.tasks.register("generatePipeline") { aggregator ->
-        aggregator.group = "Azure DevOps"
-        aggregator.description = "Generate pipeline for subprojects applying the plugin."
+  private fun checkGradleVersion() {
+    if (GradleVersion.current() < GradleVersion.version("8.9")) {
+      throw GradleException("Azure DevOps Plugin requires Gradle 8.9 or higher. You are using Gradle ${GradleVersion.current()}.")
+    }
+  }
 
-        // Find and depend on all subprojects that apply our plugin
-        subproject.rootProject.subprojects.forEach { sub ->
-          if (sub.plugins.hasPlugin("com.dorkag.azuredevops")) {
-            aggregator.dependsOn("${sub.path}:generateSubprojectTemplate")
+  private fun ensureRootCoordination(subproject: Project) { // If root does not have "generatePipeline" yet, create aggregator
+    if (!subproject.rootProject.tasks.names.contains("generatePipeline")) {
+      subproject.rootProject.tasks.register("generatePipeline") { agg ->
+        agg.group = "Azure DevOps"
+        agg.description = "Generate pipeline for subprojects applying the plugin." // depends on subprojects
+        subproject.rootProject.subprojects.forEach { sp ->
+          if (sp.plugins.hasPlugin("com.dorkag.azuredevops")) {
+            agg.dependsOn("${sp.path}:generateSubprojectTemplate")
           }
         }
       }
     }
   }
 
-  private fun applyToRootProject(project: Project) {
-    val extension = project.extensions.create(
-      "azurePipeline", AzurePipelineExtension::class.java, project.objects
+  private fun applyToRootProject(rootProject: Project) {
+    val extension = rootProject.extensions.create(
+      "azurePipeline", AzurePipelineExtension::class.java, rootProject.objects
     )
 
-    val rootPipelineTask = project.tasks.register(
-      "generateRootPipeline", GenerateRootPipelineTask::class.java
-    ) {
+    val rootTask = rootProject.tasks.register("generateRootPipeline", GenerateRootPipelineTask::class.java) {
       it.group = "Azure DevOps"
       it.description = "Generate the root Azure DevOps pipeline YAML file."
       it.extensionProperty.set(extension)
     }
 
-    // Only create the aggregator task if it doesn't exist yet
-    if (!project.tasks.names.contains("generatePipeline")) {
-      project.tasks.register("generatePipeline") { aggregator ->
-        aggregator.group = "Azure DevOps"
-        aggregator.description = "Generate pipeline for root and any subprojects applying the plugin."
-        aggregator.dependsOn(rootPipelineTask)
-
-        project.subprojects.forEach { sub ->
-          if (sub.plugins.hasPlugin("com.dorkag.azuredevops")) {
-            aggregator.dependsOn("${sub.path}:generateSubprojectTemplate")
+    // aggregator "generatePipeline"
+    if (!rootProject.tasks.names.contains("generatePipeline")) {
+      rootProject.tasks.register("generatePipeline") { agg ->
+        agg.group = "Azure DevOps"
+        agg.description = "Generate pipeline for root + subprojects"
+        agg.dependsOn(rootTask)
+        rootProject.subprojects.forEach { sp ->
+          if (sp.plugins.hasPlugin("com.dorkag.azuredevops")) {
+            agg.dependsOn("${sp.path}:generateSubprojectTemplate")
           }
         }
       }
     }
 
-    project.tasks.register("validatePipeline", ValidatePipelineTask::class.java) {
+    // validate
+    rootProject.tasks.register("validatePipeline", ValidatePipelineTask::class.java) {
       it.group = "Azure DevOps"
-      it.description = "Validate the root Azure DevOps pipeline configuration."
+      it.description = "Validate the root Azure DevOps pipeline."
       it.extension = extension
     }
   }
 
-  private fun applyToSubproject(project: Project) {
-    val subProjectExtension = project.extensions.create(
-      "azurePipeline", AzurePipelineSubProjectExtension::class.java, project.objects
+  private fun applyToSubproject(subProject: Project) {
+    val subProjectExtension = subProject.extensions.create(
+      "azurePipeline", AzurePipelineSubProjectExtension::class.java, subProject, subProject.objects
     )
 
-    project.tasks.register(
-      "generateSubprojectTemplate", GenerateSubprojectTemplateTask::class.java
-    ) { task ->
-      task.group = "Azure DevOps"
-      task.description = "Generate azure-pipelines.yml for subproject '${project.name}'"
-      task.subProjectExtensionProperty.set(subProjectExtension)
+    subProject.tasks.register("generateSubprojectTemplate", GenerateSubprojectTemplateTask::class.java) { t ->
+      t.group = "Azure DevOps"
+      t.description = "Generate azure-pipelines.yml for subproject ${subProject.name}"
+      t.subProjectExtensionProperty.set(subProjectExtension)
+
+      // 1) Decide if the root project has the plugin at configuration time
+      t.rootProjectHasPlugin.set(
+        subProject.provider {
+          subProject.rootProject.plugins.hasPlugin("com.dorkag.azuredevops")
+        })
+
+      // 2) Set a stable string for subproject name
+      t.subprojectName.set(subProject.provider { subProject.name })
     }
 
-    // Validate subproject configuration
-    project.afterEvaluate {
-      val requestedTasks = project.gradle.startParameter.taskNames
-      val shouldValidateSub = requestedTasks.any { taskName ->
-        taskName.contains("generateSubprojectTemplate", ignoreCase = true) || taskName.contains("generatePipeline", ignoreCase = true)
-      }
+    // optional validation for subprojects
+    subProject.afterEvaluate {
+      val requestedTasks = subProject.gradle.startParameter.taskNames
+      val shouldValidateSub = requestedTasks.any { it.contains("generateSubprojectTemplate", ignoreCase = true) || it.contains("generatePipeline", ignoreCase = true) }
 
       if (shouldValidateSub) {
         val stages = subProjectExtension.getStages()
         if (stages.isEmpty()) {
           throw PipelineConfigurationException(
-            "Subproject '${project.name}' must define at least one stage if the Azure DevOps plugin is applied."
+            "Subproject '${subProject.name}' must define at least one stage if the Azure DevOps plugin is applied."
           )
         }
 
@@ -124,10 +135,16 @@ class AzureDevopsPluginPlugin : Plugin<Project> {
         stages.forEach { (stageName, stageConfig) ->
           if (!stageConfig.enabled.get()) return@forEach
 
+          // SKIP "jobs required" check if declaredFromRoot == true
+          if (stageConfig.declaredFromRoot.get()) { // This stage is referencing a root-defined stage => no local jobs required
+            return@forEach
+          }
+
+          // Otherwise, do the usual checks
           val jobs = stageConfig.jobs.get()
           if (jobs.isEmpty()) {
             throw PipelineConfigurationException(
-              "Stage '$stageName' in subproject '${project.name}' must contain at least one job."
+              "Stage '$stageName' in subproject '${subProject.name}' must contain at least one job."
             )
           }
 
@@ -185,6 +202,21 @@ class AzureDevopsPluginPlugin : Plugin<Project> {
             )
           }
         }
+
+        val jobNames = jobs.keys
+        val duplicates = jobNames.groupBy { it }.filter { it.value.size > 1 }.keys
+        if (duplicates.isNotEmpty()) {
+          throw PipelineConfigurationException(
+            "Duplicate job name(s) in stage '$stageName': ${duplicates.joinToString(", ")}. Job names must be unique."
+          )
+        }
+      }
+
+      val duplicateStages = stages.values.groupBy { it }.filter { it.value.size > 1 }.keys
+      if (duplicateStages.isNotEmpty()) {
+        throw PipelineConfigurationException(
+          "Duplicate stage name(s) found: ${duplicateStages.joinToString(", ")}. Stage names must be unique."
+        )
       }
     }
   }

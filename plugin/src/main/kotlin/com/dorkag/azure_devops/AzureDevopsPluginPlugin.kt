@@ -108,15 +108,17 @@ class AzureDevopsPluginPlugin : Plugin<Project> {
       t.description = "Generate azure-pipelines.yml for subproject ${subProject.name}"
       t.subProjectExtensionProperty.set(subProjectExtension)
 
-      // 1) Decide if the root project has the plugin at configuration time
-      t.rootProjectHasPlugin.set(
+      // set the boolean property at configuration time
+      t.rootPluginApplied.set(
         subProject.provider {
           subProject.rootProject.plugins.hasPlugin("com.dorkag.azuredevops")
-        })
+        }
+      )
 
-      // 2) Set a stable string for subproject name
+      // set subprojectName, etc. here as well
       t.subprojectName.set(subProject.provider { subProject.name })
     }
+
 
     // optional validation for subprojects
     subProject.afterEvaluate {

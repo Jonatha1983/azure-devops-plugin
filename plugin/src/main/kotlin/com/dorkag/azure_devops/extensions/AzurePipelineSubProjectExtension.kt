@@ -1,6 +1,8 @@
 package com.dorkag.azure_devops.extensions
 
+import com.dorkag.azure_devops.extensions.config.JobConfig
 import com.dorkag.azure_devops.extensions.config.StageConfig
+import com.dorkag.azure_devops.extensions.config.StepConfig
 import org.gradle.api.Project
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
@@ -65,28 +67,85 @@ open class AzurePipelineSubProjectExtension @Inject constructor(subProject: Proj
 
     fun declaredStage(stageName: String) {
       if (rootHasPlugin.get()) {
-        val re = rootExtension.orNull ?: error("Root extension missing but rootHasPlugin == true??")
-        val rootStageNames = re.getStages().keys
-        if (!rootStageNames.contains(stageName)) {
-          error("Subproject tries to declareStage('$stageName') which does not exist in root.")
-        }
+        val rootExt = rootExtension.orNull ?: error("Root extension missing but rootHasPlugin == true??")
+
+        // 1) Get the root stage config
+        val rootStage = rootExt.getStages()[stageName] ?: error("Subproject tries to declareStage('$stageName'), but root does not define stage '$stageName'.")
+
+        // 2) Create a local copy
+        val cloned = copyStageConfig(rootStage, objects) // If you want subproject displayName to differ, you can do:
+        cloned.displayName.set("Stage: $stageName (from root)")
+        cloned.declaredFromRoot.set(true)
+
+        stages.put(stageName, cloned)
+      } else { // Root does not apply plugin => we let subproject do an empty reference or fail
+        error("You said declareStage('$stageName') but the root plugin is not applied.")
       }
-      val stageCfg = objects.newInstance(StageConfig::class.java, objects)
-      stageCfg.enabled.set(true)
-      stageCfg.displayName.set("Stage: $stageName (from root)")
-
-      // Mark that it references an existing root stage => subproject local jobs are optional
-      stageCfg.declaredFromRoot.set(true)
-
-      stages.put(stageName, stageCfg)
     }
 
     /**
-     * For referencing multiple root stages at once, e.g. declaredStages("Build","Test")
+     * For referencing multiple root stages at once, e.g., declaredStages("Build","Test")
      */
     @Suppress("unused")
     fun declaredStages(vararg stageNames: String) {
       stageNames.forEach { declaredStage(it) }
     }
   }
+}
+
+/**
+ * These functions are top-level and private to this file.
+ * They deep-copy the entire stage → job → step structure from the root.
+ */
+private fun copyStageConfig(src: StageConfig, objects: ObjectFactory): StageConfig {
+  val dst = objects.newInstance(StageConfig::class.java, objects)
+  dst.enabled.set(src.enabled.get())
+  dst.displayName.set(src.displayName.orNull)
+  dst.dependsOn.set(src.dependsOn.get())
+  dst.condition.set(src.condition.orNull)
+  dst.variables.putAll(src.variables.get())
+
+  // Copy jobs
+  src.jobs.get().forEach { (jobName, jobCfg) ->
+    dst.jobs {
+      job(jobName) {
+        copyJobConfig(jobCfg, this)
+      }
+    }
+  }
+
+  return dst
+}
+
+private fun copyJobConfig(src: JobConfig, dst: JobConfig) {
+  dst.displayName.set(src.displayName.orNull)
+  dst.dependsOn.set(src.dependsOn.get())
+  dst.condition.set(src.condition.orNull)
+  dst.continueOnError.set(src.continueOnError.get())
+  dst.timeoutInMinutes.set(src.timeoutInMinutes.get())
+  dst.variables.putAll(src.variables.get())
+
+  // Copy steps
+  src.steps.get().forEach { (stepName, stepCfg) ->
+    dst.steps {
+      step(stepName) {
+        copyStepConfig(stepCfg, this)
+      }
+    }
+  }
+}
+
+private fun copyStepConfig(src: StepConfig, dst: StepConfig) {
+  dst.script.set(src.script.orNull)
+  dst.taskName.set(src.taskName.orNull)
+  dst.displayName.set(src.displayName.orNull)
+  dst.inputs.putAll(src.inputs.get())
+  dst.condition.set(src.condition.orNull)
+  dst.continueOnError.set(src.continueOnError.get())
+  dst.enabled.set(src.enabled.get())
+  dst.env.putAll(src.env.get())
+  dst.name.set(src.name.orNull)
+  dst.timeoutInMinutes.set(src.timeoutInMinutes.get())
+  dst.retryCountOnTaskFailure.set(src.retryCountOnTaskFailure.get())
+  dst.target.set(src.target.orNull)
 }

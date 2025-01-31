@@ -12,7 +12,7 @@ class GenerateSubprojectTemplateTaskTest {
     val project = ProjectBuilder.builder().build()
     val generateTask = project.tasks.register(
       "generateSubTemplate", GenerateSubprojectTemplateTask::class.java
-    ).get()
+    ) { it.rootPluginApplied.set(true) }.get()
 
     // Configure the extension with some test stages
     val extension = AzurePipelineSubProjectExtension(project, project.objects).apply {
@@ -70,9 +70,12 @@ class GenerateSubprojectTemplateTaskTest {
     val project = ProjectBuilder.builder().build()
     val generateTask = project.tasks.register(
       "generateSubTemplate", GenerateSubprojectTemplateTask::class.java
-    ).get()
+    ) {
+      it.rootPluginApplied.set(true)
 
-    val extension = AzurePipelineSubProjectExtension(project,project.objects)
+    }.get()
+
+    val extension = AzurePipelineSubProjectExtension(project, project.objects)
     generateTask.subProjectExtensionProperty.set(extension)
 
     generateTask.generateSubTemplate()

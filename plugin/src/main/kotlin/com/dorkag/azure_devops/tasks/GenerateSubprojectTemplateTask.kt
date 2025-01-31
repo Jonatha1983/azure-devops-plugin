@@ -31,11 +31,13 @@ abstract class GenerateSubprojectTemplateTask : DefaultTask() {
   @get:Input
   abstract val projectName: Property<String>
 
-  @get:Input
-  abstract val rootProjectHasPlugin: Property<Boolean>
 
   @get:Input
   abstract val subprojectName: Property<String>
+
+  @get:Input
+  abstract val rootPluginApplied: Property<Boolean>
+
 
   init {
     subprojectYaml.convention(project.layout.projectDirectory.file("azure-pipelines.yml"))
@@ -43,14 +45,15 @@ abstract class GenerateSubprojectTemplateTask : DefaultTask() {
     gradleVersion.convention(project.gradle.gradleVersion)
     projectName.convention(project.provider { project.name })
     subprojectName.convention(project.provider { project.name })
+
   }
 
   @TaskAction
-  fun generateSubTemplate() {
+  fun generateSubTemplate() { // Now read rootPluginApplied:
+    val hasRoot = rootPluginApplied.get()
     val ext = subProjectExtensionProperty.get()
-    val rootApplies = project.rootProject.plugins.hasPlugin("com.dorkag.azuredevops")
 
-    val pipeline = if (!rootApplies) { // If root doesn't apply, produce a standalone pipeline
+    val pipeline = if (hasRoot.not()) { // If root doesn't apply, produce a standalone pipeline
       buildStandalone(ext)
     } else { // If root also applies, produce a snippet or override
       buildSnippet(ext)

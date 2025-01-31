@@ -51,13 +51,14 @@ testing {
 }
 
 gradlePlugin {
-  vcsUrl = "https://github.com/Jonatha1983/azure-devops-plugin" // Define the plugin
+  vcsUrl = "https://github.com/Jonatha1983/azure-devops-plugin"
   @Suppress("unused") val azuredevops by plugins.creating {
     id = "com.dorkag.azuredevops"
     implementationClass = "com.dorkag.azure_devops.AzureDevopsPluginPlugin"
     displayName = "Azure DevOps Pipelines Plugin"
     description = "A plugin for generating Azure DevOps pipelines from Gradle configuration"
     tags = listOf("azure", "devops", "pipelines", "generator")
+    website = "https://github.com/Jonatha1983/azure-devops-plugin"
   }
 }
 

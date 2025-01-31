@@ -17,11 +17,11 @@ open class AzurePipelineSubProjectExtension @Inject constructor(subProject: Proj
 
 
   // New DSL support - internal map property
-  internal val stagesContainer: MapProperty<String, StageConfig> = objects.mapProperty(String::class.java, StageConfig::class.java)
+  private val stagesContainer: MapProperty<String, StageConfig> = objects.mapProperty(String::class.java, StageConfig::class.java)
 
   // Store these so we don't call subProject at execution time
-  val rootHasPlugin: Property<Boolean> = objects.property(Boolean::class.java)
-  val rootExtension: Property<AzurePipelineExtension?> = objects.property(AzurePipelineExtension::class.java)
+  private val rootHasPlugin: Property<Boolean> = objects.property(Boolean::class.java)
+  private val rootExtension: Property<AzurePipelineExtension?> = objects.property(AzurePipelineExtension::class.java)
 
   init {
     trigger.convention(listOf("main"))
@@ -65,6 +65,7 @@ open class AzurePipelineSubProjectExtension @Inject constructor(subProject: Proj
     }
 
 
+    @Suppress("MemberVisibilityCanBePrivate")
     fun declaredStage(stageName: String) {
       if (rootHasPlugin.get()) {
         val rootExt = rootExtension.orNull ?: error("Root extension missing but rootHasPlugin == true??")

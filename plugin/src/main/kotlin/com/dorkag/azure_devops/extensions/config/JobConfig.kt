@@ -12,6 +12,8 @@ open class JobConfig @Inject constructor(val objects: ObjectFactory) {
   val condition: Property<String> = objects.property(String::class.java)
   val continueOnError: Property<Boolean> = objects.property(Boolean::class.java).convention(false)
   val timeoutInMinutes: Property<Int> = objects.property(Int::class.java).convention(60)
+
+  @Suppress("unused")
   val strategy: Property<StrategyConfig> = objects.property(StrategyConfig::class.java)
   val variables: MapProperty<String, String> = objects.mapProperty(String::class.java, String::class.java).convention(emptyMap())
 

@@ -11,4 +11,8 @@
         </description>
         <accepts>starter-topic.html</accepts>
     </rule>
+    <rule id="5314ea8e">
+        <description>Created after removal of "Concepts" from Azure DevOps Pipelines Plugin</description>
+        <accepts>Concepts.html</accepts>
+    </rule>
 </rules>

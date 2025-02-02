@@ -1,45 +1,205 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic
-        SYSTEM "https://resources.jetbrains.com/writerside/1.0/xhtml-entities.dtd">
+  SYSTEM "https://resources.jetbrains.com/writerside/1.0/xhtml-entities.dtd">
 <topic xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/topic.v2.xsd"
        title="Configurations" id="Configurations">
 
-    <p>
-        A reference article is information-oriented.
-        It provides a structured description of a product:
-        its APIs, classes, functions, configuration options, actions, and so on.
-        Start with a summary of what this reference article is about, and what the items you are describing are used for.
-    </p>
+  <p>
+    This reference describes all available configuration options for the Azure DevOps Gradle plugin.
+    The plugin uses a type-safe DSL to configure Azure Pipelines, organized into different configuration levels.
+  </p>
 
-    <chapter title="Command" id="command">
-        <p>Syntax:</p>
+  <chapter title="Pipeline-Level Configuration" id="pipeline-level">
+    <p>Top-level pipeline configurations that affect the entire pipeline:</p>
 
-        <code-block lang="shell">
-            cmd [OPTIONS]
-        </code-block>
-    </chapter>
+    <deflist type="medium">
+      <def title="name" id="name">
+        Pipeline display name in Azure DevOps.
+        <code-block lang="kotlin">
+                    name.set("My Pipeline")
+                </code-block>
+      </def>
+      <def title="trigger" id="trigger">
+        List of branch names that trigger the pipeline.
+        <code-block lang="kotlin">
+                    trigger.set(listOf("main", "develop"))
+                </code-block>
+      </def>
+      <def title="pr" id="pr">
+        Pull request trigger configuration.
+        <code-block lang="kotlin">
+                    pr {
+                      branches.set(listOf("main"))
+                      paths.set(listOf("src/*"))
+                    }
+                </code-block>
+      </def>
+      <def title="vmImage" id="image">
+        Azure Pipelines agent pool VM image.
+        <code-block lang="kotlin">
+                    vmImage.set("ubuntu-latest")
+                </code-block>
+      </def>
+      <def title="variables" id="variables-2">
+        Pipeline-level variables.
+        <code-block lang="kotlin">
+                    variables.set(
+                      mapOf(
+                        "GRADLE_USER_HOME" to "$(Pipeline.Workspace)/.gradle",
+                        "GRADLE_OPTS" to "-Dorg.gradle.daemon=false"
+                      )
+                    )
+                </code-block>
+      </def>
+    </deflist>
+  </chapter>
 
-    <chapter title="Options" id="options">
-        <p>Describe what each option is used for:</p>
+  <chapter title="Stage Configuration" id="stage-configuration">
+    <p>Configuration options available for pipeline stages:</p>
 
-        <deflist type="medium">
-            <def title="-o, --open">
-                Opens a file.
-            </def>
-            <def title="-c, --close">
-                Closes a file.
-            </def>
-            <def title="-v --version">
-                Displays version information.
-            </def>
-            <def title="-h, --help">
-                Displays help.
-            </def>
-        </deflist>
-    </chapter>
+    <deflist type="medium">
+      <def title="displayName" id="displayname-2">
+        Stage display name in Azure DevOps.
+        <code-block lang="kotlin">
+                    displayName.set("Build Stage")
+                </code-block>
+      </def>
+      <def title="dependsOn" id="dependence-1">
+        List of stages this stage depends.
+        <code-block lang="kotlin">
+                    dependsOn.set(listOf("Test"))
+                </code-block>
+      </def>
+      <def title="condition" id="condition">
+        Stage execution condition.
+        <!--suppress WrsCodeBlockWidthInspection -->
+        <code-block lang="kotlin">
+          condition.set("and(succeeded(), eq(variables['Build.SourceBranch'],'refs/heads/main'))")
+                </code-block>
+      </def>
+      <def title="enabled" id="enabled-1">
+        Enable or disable the stage.
+        <code-block lang="kotlin">
+                    enabled.set(false)
+                </code-block>
+      </def>
+      <def title="variables" id="variables">
+        Stage-level variables.
+        <code-block lang="kotlin">
+                    variables.set(mapOf("STAGE_VAR" to "value"))
+                </code-block>
+      </def>
+    </deflist>
+  </chapter>
 
-    <seealso>
-        <!--Provide links to related how-to guides, overviews, and tutorials.-->
-    </seealso>
+  <chapter title="Job Configuration" id="job-configuration">
+    <p>Configuration options available for jobs within stages:</p>
+
+    <deflist type="medium">
+      <def title="displayName" id="displayname-1">
+        Job display name.
+        <code-block lang="kotlin">
+                    displayName.set("Build Job")
+                </code-block>
+      </def>
+      <def title="dependsOn" id="dependence">
+        List of jobs this job depends on.
+        <code-block lang="kotlin">
+                    dependsOn.set(listOf("Test"))
+                </code-block>
+      </def>
+      <def title="condition" id="condition-1">
+        Job execution condition.
+        <code-block lang="kotlin">
+                    condition.set("succeeded()")
+                </code-block>
+      </def>
+      <def title="continueOnError" id="containerisation">
+        Whether to continue a pipeline if a job fails.
+        <code-block lang="kotlin">
+                    continueOnError.set(true)
+                </code-block>
+      </def>
+      <def title="timeoutInMinutes" id="timeoutinminutes">
+        Job timeout in minutes.
+        <code-block lang="kotlin">
+                    timeoutInMinutes.set(60)
+                </code-block>
+      </def>
+      <def title="variables" id="variables-1">
+        Job-level variables.
+        <code-block lang="kotlin">
+                    variables.set(mapOf("JOB_VAR" to "value"))
+                </code-block>
+      </def>
+    </deflist>
+  </chapter>
+
+  <chapter title="Step Configuration" id="step-configuration">
+    <p>Configuration options available for steps within jobs:</p>
+
+    <deflist type="medium">
+      <def title="task" id="task">
+        Azure Pipeline predefined task.
+        <code-block lang="kotlin">
+                    task("Gradle@3") {
+                      inputs.put("tasks", "build")
+                    }
+                </code-block>
+      </def>
+      <def title="script" id="script">
+        Shell script to execute.
+        <code-block lang="kotlin">
+                    script.set("./gradlew build")
+                </code-block>
+      </def>
+      <def title="displayName" id="displayname">
+        Step display name.
+        <code-block lang="kotlin">
+                    displayName.set("Build Step")
+                </code-block>
+      </def>
+      <def title="condition" id="condition-2">
+        Step execution condition.
+        <code-block lang="kotlin">
+                    condition.set("succeeded()")
+                </code-block>
+      </def>
+      <def title="enabled" id="enabled">
+        Enable or disable the step.
+        <code-block lang="kotlin">
+                    enabled.set(true)
+                </code-block>
+      </def>
+      <def title="timeoutInMinutes" id="timeoutinminutes-1">
+        Step timeout in minutes.
+        <code-block lang="kotlin">
+                    timeoutInMinutes.set(10)
+                </code-block>
+      </def>
+    </deflist>
+  </chapter>
+
+  <chapter title="Multi-Project Configuration" id="multi-project-configuration">
+    <p>Special configurations for multi-project setups:</p>
+
+    <deflist type="medium">
+      <def title="declaredStage" id="declared-stage">
+        Reference a stage declared in the root project.
+        <code-block lang="kotlin">
+                    stages {
+                      declaredStage("Build")
+                    }
+                </code-block>
+      </def>
+    </deflist>
+  </chapter>
+
+  <seealso>
+    <category ref="related">
+      <a href="Tasks.topic"/>
+      <a href="Usage-DSL.topic">Usage &amp; DSL</a>
+    </category>
+  </seealso>
 </topic>

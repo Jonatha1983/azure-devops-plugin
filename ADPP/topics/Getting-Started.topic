@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  SYSTEM "https://resources.jetbrains.com/writerside/1.0/xhtml-entities.dtd">
+<topic xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/topic.v2.xsd"
+       title="Getting Started" id="Getting-Started">
+
+
+  <chapter title="Applying the Plugin" id="applying-the-plugin">
+    <p>
+      To apply the plugin to a single project, add the following to your build script:
+    </p>
+    <code-block lang="kotlin">
+            plugins {
+              id("com.dorkag.azuredevops") version "1.0.1"
+            }
+
+            azurePipeline {
+              name.set("My Pipeline")
+              // ...
+            }
+        </code-block>
+
+    <p> Then run:</p>
+    <code-block lang="bash">
+        ./gradlew generatePipeline
+      </code-block>
+    <p>
+      It creates an <code>azure-pipelines.yml</code> in the project directory.
+    </p>
+
+  </chapter>
+
+  <!--Multi-project-->
+  <chapter title="Multi-project" id="multi-project">
+    <p>
+      To apply the plugin to a multi-project build, add the following to your root project's build script:
+    </p>
+    <code-block lang="kotlin">
+            // root build.gradle.kts
+            plugins {
+              id("com.dorkag.azuredevops")
+            }
+
+            azurePipeline {
+              name.set("Root Pipeline Only")
+              // ...
+            }
+        </code-block>
+
+    <p> Then run:</p>
+    <code-block lang="bash">
+        ./gradlew generatePipeline
+      </code-block>
+    <p>
+      It creates an <code>azure-pipelines.yml</code> in each project directory.
+    </p>
+  </chapter>
+</topic>

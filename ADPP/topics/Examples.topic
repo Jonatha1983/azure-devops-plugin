@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  SYSTEM "https://resources.jetbrains.com/writerside/1.0/xhtml-entities.dtd">
+<topic xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/topic.v2.xsd"
+       title="Examples" id="Examples">
+
+  <!--
+  Single Gradle Task
+azurePipeline {
+  name.set("Single Task Example")
+  stages {
+      stage("Build") {
+          jobs {
+              job("GradleJob") {
+                  steps {
+                      step("RunBuild") {
+                          task("Gradle@3") {
+                              displayName.set("Clean and Build")
+                              inputs.put("tasks","clean build")
+                          }
+                      }
+                  }
+              }
+          }
+      }
+  }
+}
+
+Multiple Subprojects
+
+// root build.gradle.kts
+plugins {
+  id("com.dorkag.azuredevops")
+}
+
+azurePipeline {
+  name.set("Root Aggregator Pipeline")
+  vmImage.set("ubuntu-latest")
+  // No root stages => aggregator references subprojects
+}
+
+// subA/build.gradle.kts
+plugins { id("com.dorkag.azuredevops") }
+azurePipeline {
+  name.set("Service A Pipeline")
+  stages {
+      stage("BuildA") {
+          displayName.set("Build Service A")
+          jobs {
+              job("buildJob") {
+                  steps {
+                      step("buildA") {
+                          script.set("./gradlew :serviceA:build")
+                      }
+                  }
+              }
+          }
+      }
+  }
+}
+  -->
+
+  <chapter title="Examples" id="examples-examples">
+    <p>
+      The plugin provides the following examples:
+    </p>
+    <list type="bullet" id="examples-list">
+      <li>
+        <b>Single Gradle Task</b>
+        <p>
+          A single task that runs a Gradle build.
+        </p>
+      </li>
+      <li>
+        <b>Multiple Subprojects</b>
+        <p>
+          An aggregator pipeline that references subprojects.
+        </p>
+      </li>
+    </list>
+  </chapter>
+
+</topic>

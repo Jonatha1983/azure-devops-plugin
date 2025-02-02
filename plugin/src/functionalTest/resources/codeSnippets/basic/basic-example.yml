@@ -1,0 +1,16 @@
+name: Gradle Task Pipeline
+trigger:
+  - main
+pool:
+  vmImage: ubuntu-latest
+stages:
+  - stage: BuildStage
+    displayName: Build Stage
+    jobs:
+      - job: BuildJob
+        displayName: BuildJob job
+        steps:
+          - task: Gradle@3
+            displayName: Run Gradle Build
+            inputs:
+              tasks: clean build

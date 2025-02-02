@@ -2,7 +2,7 @@ package com.dorkag.azure_devops
 
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -10,24 +10,25 @@ import java.io.File
 @KoverAnnotation
 class AzureDevopsMultiPluginFunctionalTest {
 
-    @field:TempDir
-    lateinit var projectDir: File
+  @field:TempDir
+  lateinit var projectDir: File
 
-    private val buildFile by lazy { projectDir.resolve("build.gradle.kts") }
-    private val settingsFile by lazy { projectDir.resolve("settings.gradle.kts") }
+  private val buildFile by lazy { projectDir.resolve("build.gradle.kts") }
+  private val settingsFile by lazy { projectDir.resolve("settings.gradle.kts") }
 
-    @Test
-    fun `generates pipeline with subproject configuration`() {
-        settingsFile.writeText(
-            """
+  @Test
+  fun `generates pipeline with subproject configuration`() {
+    settingsFile.writeText(
+      """
             rootProject.name = "azure-devops-plugin-test"
             include("subproject")
-            """.trimIndent()
-        )
+        """.trimIndent()
+    )
 
-        // Root project DSL
-        buildFile.writeText(
-            """
+    // Root project DSL - even though we define stages, they shouldn't appear in output
+    // because a subproject applies the plugin
+    buildFile.writeText(
+      """
             plugins {
                 id("com.dorkag.azuredevops")
             }
@@ -38,14 +39,14 @@ class AzureDevopsMultiPluginFunctionalTest {
                 vmImage.set("ubuntu-20.04")
 
                 stages {
-                    "Build" {
+                    stage("Build") {
                         enabled.set(true)
                         displayName.set("Build Project")
                         jobs {
-                            "BuildJob" {
+                            job("BuildJob") {
                                 displayName.set("Build All Projects")
                                 steps {
-                                    "BuildStep" {
+                                    step("BuildStep") {
                                         script.set("./gradlew build")
                                         displayName.set("Run Gradle Build")
                                     }
@@ -55,39 +56,34 @@ class AzureDevopsMultiPluginFunctionalTest {
                     }
                 }
             }
-            """
-        )
+        """.trimIndent()
+    )
 
-        // Subproject that configures its own stage list
-        val subprojectDir = projectDir.resolve("subproject").apply { mkdirs() }
-        subprojectDir.resolve("build.gradle.kts").writeText(
-            """
+    // Subproject that configures its own stage list
+    val subprojectDir = projectDir.resolve("subproject").apply { mkdirs() }
+    subprojectDir.resolve("build.gradle.kts").writeText(
+      """
             plugins {
                 id("com.dorkag.azuredevops")
             }
 
             azurePipeline {
-                stages.set(listOf("Build", "Test"))
+                stages {
+                  declaredStage("Build")
+                }
             }
-            """.trimIndent()
-        )
+        """.trimIndent()
+    )
 
-        val result = GradleRunner.create()
-            .withPluginClasspath()
-            .withArguments("generatePipeline")
-            .withProjectDir(projectDir)
-            .forwardOutput()
-            .build()
+    val result = GradleRunner.create().withPluginClasspath().withArguments("generatePipeline").withProjectDir(projectDir).forwardOutput().build()
 
-        assertEquals(TaskOutcome.SUCCESS, result.task(":generatePipeline")?.outcome)
+    assertEquals(TaskOutcome.SUCCESS, result.task(":generatePipeline")?.outcome)
 
-        val rootPipelineContent = projectDir.resolve("azure-pipelines.yml").readText().trim()
+    val rootPipelineContent = projectDir.resolve("azure-pipelines.yml").readText()
+    val strippedContent = stripMetadataComments(rootPipelineContent).trim()
 
-        // Adjust the final expected YAML as needed. The plugin might or might not integrate
-        // the subproject stages automatically. If your plugin merges them, you might see "Build"
-        // from the root plus "Test" from subproject. If the subproject generates its own snippet,
-        // or if you rely on separate tasks, adapt the expected accordingly.
-        val expectedRootContent = """
+    // Expect only the pipeline basics and template reference, no root stages
+    val expectedRootContent = """
             name: Root Pipeline
             trigger:
               - main
@@ -95,16 +91,12 @@ class AzureDevopsMultiPluginFunctionalTest {
             pool:
               vmImage: ubuntu-20.04
             stages:
-              - stage: Build
-                displayName: Build Project
-                jobs:
-                  - job: BuildJob
-                    displayName: Build All Projects
-                    steps:
-                      - script: ./gradlew build
-                        displayName: Run Gradle Build
+              - template: subproject/azure-pipelines.yml
         """.trimIndent()
 
-        assertEquals(expectedRootContent, rootPipelineContent, "Root pipeline YAML content does not match expected.")
-    }
+    println("=== Generated YAML (without metadata) ===\n$strippedContent")
+    println("=== Expected YAML ===\n$expectedRootContent")
+
+    assertEquals(expectedRootContent, strippedContent, "Root pipeline YAML content does not match expected.")
+  }
 }

@@ -24,61 +24,61 @@ class AzureDevOpsDockerTest {
     fun `generates pipeline matching Docker snippet`() {
         settingsFile.writeText("rootProject.name = \"azure-devops-plugin-test\"")
 
-        buildFile.writeText(
-            """
-            plugins {
-                id("com.dorkag.azuredevops")
+      buildFile.writeText(
+        """
+        plugins {
+            id("com.dorkag.azuredevops")
+        }
+      
+        azurePipeline {
+            // This DSL produces a single stage "BuildDocker" with nested jobs
+            name.set("DockerBuildPipeline")
+            trigger.set(listOf("main", "develop"))
+            pr {
+                branches.set(listOf("main", "develop"))
             }
-
-            azurePipeline {
-                // This DSL produces a single stage "BuildDocker" with nested jobs
-                name.set("DockerBuildPipeline")
-                trigger.set(listOf("main", "develop"))
-                pr{
-                    branches.set(listOf("main", "develop"))
-                }
-                vmImage.set("ubuntu-latest")
-
-                stages {
-                    "BuildDocker" {
-                        enabled.set(true)
-                        displayName.set("Build Docker image")
-                        jobs {
-                            "GradleBuild" {
-                                displayName.set("Gradlew build")
-                                steps {
-                                    "gradleStep" {
-                                        script.set("./gradlew bootJar :test --info --build-cache")
-                                        displayName.set("Gradlew build")
-                                    }
+            vmImage.set("ubuntu-latest")
+      
+            stages {
+                stage("BuildDocker") {
+                    enabled.set(true)
+                    displayName.set("Build Docker image")
+                    jobs {
+                        job("GradleBuild") {
+                            displayName.set("Gradlew build")
+                            steps {
+                                step("gradleStep") {
+                                    script.set("./gradlew bootJar :test --info --build-cache")
+                                    displayName.set("Gradlew build")
                                 }
                             }
-
-                            "DockerLogin" {
-                                displayName.set("Login to Azure registry")
-                                steps {
-                                    "dockerLogin" {
-                                        script.set("docker login -u ... -p ... myregistry.azurecr.io")
-                                        displayName.set("Login to Azure registry")
-                                    }
+                        }
+      
+                        job("DockerLogin") {
+                            displayName.set("Login to Azure registry")
+                            steps {
+                                step("dockerLogin") {
+                                    script.set("docker login -u ... -p ... myregistry.azurecr.io")
+                                    displayName.set("Login to Azure registry")
                                 }
                             }
-
-                            "DockerBuildPush" {
-                                displayName.set("Build and push image to container registry")
-                                steps {
-                                    "dockerBuildPush" {
-                                        script.set("docker build . -t myregistry.azurecr.io/repository:latest && docker push myregistry.azurecr.io/repository:latest")
-                                        displayName.set("Build and push image")
-                                    }
+                        }
+      
+                        job("DockerBuildPush") {
+                            displayName.set("Build and push image to container registry")
+                            steps {
+                                step("dockerBuildPush") {
+                                    script.set("docker build . -t myregistry.azurecr.io/repository:latest && docker push myregistry.azurecr.io/repository:latest")
+                                    displayName.set("Build and push image")
                                 }
                             }
                         }
                     }
                 }
             }
-            """.trimIndent()
-        )
+        }
+        """.trimIndent()
+            )
 
         val result =
             GradleRunner.create().withPluginClasspath().withArguments("generatePipeline").withProjectDir(projectDir)
@@ -86,15 +86,18 @@ class AzureDevOpsDockerTest {
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":generatePipeline")?.outcome)
 
-        val generatedYaml = projectDir.resolve("azure-pipelines.yml").readText().trim()
+        val generatedYaml = projectDir.resolve("azure-pipelines.yml").readText()
+        // Strip metadata comments from generated YAML before comparison
+        val strippedGeneratedYaml = stripMetadataComments(generatedYaml).trim()
         val expectedYaml = expected.trim()
 
-        println("=== Generated YAML ===\n$generatedYaml")
+        println("=== Generated YAML (without metadata) ===\n$strippedGeneratedYaml")
         println("=== Expected YAML ===\n$expectedYaml")
 
-        assertEquals(expectedYaml, generatedYaml, "Generated YAML content does not match expected content.")
+        assertEquals(expectedYaml, strippedGeneratedYaml,
+            "Generated YAML content (excluding metadata) does not match expected content.")
 
-        // Additional substring checks
+        // Additional substring checks (these should still work since the content is still there)
         assertTrue(generatedYaml.contains("DockerBuildPipeline"), "Pipeline name not found")
         assertTrue(generatedYaml.contains("vmImage: ubuntu-latest"), "vmImage not found")
         assertTrue(

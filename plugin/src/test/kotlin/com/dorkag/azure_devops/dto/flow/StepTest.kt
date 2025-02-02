@@ -20,13 +20,12 @@ class StepTest {
   fun `test Step properties`() {
     val task = Task("taskName", mapOf("key" to "value"))
     val step = Step(
-      script = "echo 'Hello'",
-      displayName = "Greet",
-      task = task
+      script = "echo 'Hello'", displayName = "Greet", task = task.name, inputs = task.inputs
     )
 
     assertEquals("echo 'Hello'", step.script)
     assertEquals("Greet", step.displayName)
-    assertEquals(task, step.task)
+    assertEquals(task.inputs, step.inputs)
+    assertNull(step.name)
   }
 }

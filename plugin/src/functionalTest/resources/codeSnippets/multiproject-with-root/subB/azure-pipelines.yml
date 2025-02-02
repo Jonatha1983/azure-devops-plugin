@@ -1,0 +1,13 @@
+trigger:
+  - main
+pool:
+  vmImage: ubuntu-latest
+stages:
+  - stage: Build
+    displayName: Build
+    jobs:
+      - job: rootBuildJob
+        displayName: Build
+        steps:
+          - script: ./gradlew build
+            displayName: Build

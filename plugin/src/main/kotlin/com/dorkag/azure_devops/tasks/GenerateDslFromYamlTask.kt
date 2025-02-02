@@ -40,10 +40,10 @@ abstract class GenerateDslFromYamlTask : DefaultTask() {
 
       val dslSnippet = DslBuilder().apply {
         block(AzureDevOpsPipelineConstants.AZURE_PIPELINE) {
-          generateBasicConfig(this, pipelineDto)
-          generateTriggerConfig(this, pipelineDto)
-          generateVariablesConfig(this, pipelineDto)
-          generateStagesConfig(this, pipelineDto)
+          generateBasicConfig(pipelineDto)
+          generateTriggerConfig(pipelineDto)
+          generateVariablesConfig(pipelineDto)
+          generateStagesConfig(pipelineDto)
         }
       }.build()
 
@@ -58,7 +58,7 @@ abstract class GenerateDslFromYamlTask : DefaultTask() {
       unsupportedFeatures.add("Pipeline resources configuration")
     }
 
-    if (pipeline.parameters != null && pipeline.parameters.isNotEmpty()) {
+    if (pipeline.parameters.isNullOrEmpty().not()) {
       unsupportedFeatures.add("Pipeline parameters")
     }
 
@@ -69,51 +69,49 @@ abstract class GenerateDslFromYamlTask : DefaultTask() {
     }
   }
 
-  private fun DslBuilder.generateBasicConfig(builder: DslBuilder, pipeline: Pipeline) {
-    pipeline.name.let {
-      builder.line("name.set(\"$it\")")
-    }
+  private fun DslBuilder.generateBasicConfig(pipeline: Pipeline) {
+    line("name.set(\"${pipeline.name}\")")
 
     pipeline.pool.vmImage.let {
-      builder.line("vmImage.set(\"$it\")")
+      line("vmImage.set(\"$it\")")
     }
   }
 
-  private fun DslBuilder.generateTriggerConfig(builder: DslBuilder, pipeline: Pipeline) {
+  private fun DslBuilder.generateTriggerConfig(pipeline: Pipeline) {
     pipeline.trigger?.let { branches ->
       val branchList = branches.joinToString(", ") { "\"$it\"" }
-      builder.line("${AzureDevOpsPipelineConstants.TRIGGER}.set(listOf($branchList))")
+      line("${AzureDevOpsPipelineConstants.TRIGGER}.set(listOf($branchList))")
     }
 
     pipeline.pr?.let { prBranches ->
-      builder.block(AzureDevOpsPipelineConstants.PR) {
+      block(AzureDevOpsPipelineConstants.PR) {
         val branchList = prBranches.joinToString(", ") { "\"$it\"" }
         line("${AzureDevOpsPipelineConstants.BRANCHES}.set(listOf($branchList))")
       }
     }
   }
 
-  private fun DslBuilder.generateVariablesConfig(builder: DslBuilder, pipeline: Pipeline) {
+  private fun DslBuilder.generateVariablesConfig(pipeline: Pipeline) {
     pipeline.variables?.takeIf { it.isNotEmpty() }?.let { vars ->
       val varStrings = vars.map { (k, v) -> "\"$k\" to \"$v\"" }
-      builder.line("variables.putAll(mapOf(")
-      varStrings.forEach { builder.line("    $it,") }
-      builder.line("))")
+      line("variables.putAll(mapOf(")
+      varStrings.forEach { line("    $it,") }
+      line("))")
     }
   }
 
-  private fun DslBuilder.generateStagesConfig(builder: DslBuilder, pipeline: Pipeline) {
-    builder.block(AzureDevOpsPipelineConstants.STAGES) {
+  private fun DslBuilder.generateStagesConfig(pipeline: Pipeline) {
+    block(AzureDevOpsPipelineConstants.STAGES) {
       pipeline.stages.forEach { stage ->
         if (stage.template == null) { // Skip template stages
-          generateStage(this, stage)
+          generateStage(stage)
         }
       }
     }
   }
 
-  private fun DslBuilder.generateStage(builder: DslBuilder, stage: Stage) {
-    builder.block("${AzureDevOpsPipelineConstants.STAGE}(\"${stage.stage}\")") {
+  private fun DslBuilder.generateStage(stage: Stage) {
+    block("${AzureDevOpsPipelineConstants.STAGE}(\"${stage.stage}\")") {
       stage.displayName?.let { line("${AzureDevOpsPipelineConstants.DISPLAY_NAME}.set(\"$it\")") }
       stage.dependsOn?.takeIf { it.isNotEmpty() }?.let { deps ->
         val depList = deps.joinToString(", ") { "\"$it\"" }
@@ -122,30 +120,30 @@ abstract class GenerateDslFromYamlTask : DefaultTask() {
 
       stage.jobs?.let { jobs ->
         block(AzureDevOpsPipelineConstants.JOBS) {
-          jobs.forEach { job -> generateJob(this, job) }
+          jobs.forEach { job -> generateJob(job) }
         }
       }
     }
   }
 
-  private fun DslBuilder.generateJob(builder: DslBuilder, job: Job) {
-    builder.block("${AzureDevOpsPipelineConstants.JOB}(\"${job.job}\")") {
+  private fun DslBuilder.generateJob(job: Job) {
+    block("${AzureDevOpsPipelineConstants.JOB}(\"${job.job}\")") {
       job.displayName?.let { line("${AzureDevOpsPipelineConstants.DISPLAY_NAME}.set(\"$it\")") }
       job.condition?.let { line("${AzureDevOpsPipelineConstants.CONDITION}.set(\"$it\")") }
 
       if (job.steps.isNotEmpty()) {
         block(AzureDevOpsPipelineConstants.STEPS) {
           job.steps.forEachIndexed { index, step ->
-            generateStep(this, step, index)
+            generateStep(step, index)
           }
         }
       }
     }
   }
 
-  private fun DslBuilder.generateStep(builder: DslBuilder, step: Step, index: Int) {
+  private fun DslBuilder.generateStep(step: Step, index: Int) {
     val stepName = step.displayName?.replace(Regex("[^A-Za-z0-9]"), "") ?: "${AzureDevOpsPipelineConstants.STEP}${index + 1}"
-    builder.block("${AzureDevOpsPipelineConstants.STEP}(\"$stepName\")") {
+    block("${AzureDevOpsPipelineConstants.STEP}(\"$stepName\")") {
       step.displayName?.let { line("${AzureDevOpsPipelineConstants.DISPLAY_NAME}.set(\"$it\")") }
 
       when {

@@ -24,7 +24,7 @@ class AzurePipelineExtensionTest {
     val extension = AzurePipelineExtension(project.objects)
 
     extension.stages {
-      "build" { // Custom stage configuration
+      stage("build") { // Custom stage configuration
       }
     }
 

@@ -14,19 +14,16 @@ import kotlin.test.assertContains
 @KoverAnnotation
 class GenerateDslFromYamlTaskTest {
 
+  @field:TempDir
+  lateinit var projectDir: File
 
-    @field:TempDir
-    lateinit var projectDir: File
+  private val buildFile by lazy { projectDir.resolve("build.gradle.kts") }
+  private val yamlFile by lazy { projectDir.resolve("pipeline.yaml") }
 
-    private val buildFile by lazy { projectDir.resolve("build.gradle.kts") }
-    private val yamlFile by lazy { projectDir.resolve("pipeline.yaml") }
-
-    @BeforeTest
-    fun setup() {
-
-        // Sample minimal pipeline.yaml input
-        yamlFile.writeText(
-            """
+  @BeforeTest
+  fun setup() { // Sample minimal pipeline.yaml input (unchanged)
+    yamlFile.writeText(
+      """
             name: "Test Pipeline"
             trigger:
               - main
@@ -46,48 +43,51 @@ class GenerateDslFromYamlTaskTest {
                       - script: "./gradlew build"
                         displayName: "Run Build"
             """.trimIndent()
-        )
+    )
 
-        // Apply your plugin and configure the task
-        // Assuming your plugin is named `com.dorkag.azure-devops`
-        buildFile.writeText(
-            """
+    buildFile.writeText(
+      """
             plugins {
                 id("com.dorkag.azuredevops")
             }
 
-            tasks{ 
-                convertYamlToDsl.configure{
+            tasks { 
+                convertYamlToDsl.configure {
                     inputYaml.set(file("pipeline.yaml"))
                 }
             }
             """.trimIndent()
-        )
-    }
+    )
+  }
 
-    @Test
-    fun `test generateDsl task`() {
-        val result = GradleRunner.create().withProjectDir(projectDir).withArguments("convertYamlToDsl")
-            .withPluginClasspath().build()
+  @Test
+  fun `test generateDsl task`() {
+    val result = GradleRunner.create().withProjectDir(projectDir).withArguments("convertYamlToDsl").withPluginClasspath().build()
 
-        assertEquals(TaskOutcome.SUCCESS, result.task(":convertYamlToDsl")?.outcome)
+    assertEquals(TaskOutcome.SUCCESS, result.task(":convertYamlToDsl")?.outcome)
 
-        val generatedDsl = projectDir.toPath().resolve("build").resolve("generated-dsl.gradle.kts").toFile()
-        assertTrue(generatedDsl.exists(), "The generated DSL file should exist")
+    val generatedDsl = projectDir.toPath().resolve("build").resolve("generated-dsl.gradle.kts").toFile()
+    assertTrue(generatedDsl.exists(), "The generated DSL file should exist")
 
-        val dslContent = generatedDsl.readText()
+    val dslContent = generatedDsl.readText()
+    println("Generated DSL Content:\n$dslContent") // Debug output
 
-        // Check that some expected content is present
-        assertContains(dslContent, "azurePipeline {")
-        assertContains(dslContent, "name.set(\"Test Pipeline\")")
-        assertContains(dslContent, "triggerBranches.set(listOf(\"main\", \"develop\"))")
-        assertContains(dslContent, "pullRequestTrigger {")
-        assertContains(dslContent, "vmImage.set(\"ubuntu-latest\")")
-        assertContains(dslContent, "variables.putAll(mapOf(\"ENV\" to \"test\"))")
-        assertContains(dslContent, "\"Build\" {")
-        assertContains(dslContent, "displayName.set(\"Build Stage\")")
-        assertContains(dslContent, "\"build-job\" {")
-        assertContains(dslContent, "script.set(\"./gradlew build\")")
-        assertContains(dslContent, "displayName.set(\"Run Build\")")
-    }
+    // Updated assertions to match current implementation
+    assertContains(dslContent, "azurePipeline {")
+    assertContains(dslContent, "name.set(\"Test Pipeline\")")
+    assertContains(dslContent, "trigger.set(listOf(\"main\", \"develop\"))")
+    assertContains(dslContent, "pr {")
+    assertContains(dslContent, "branches.set(listOf(\"feature/*\"))")
+    assertContains(dslContent, "vmImage.set(\"ubuntu-latest\")")
+    assertContains(dslContent, "variables.putAll(mapOf(")
+    assertContains(dslContent, "\"ENV\" to \"test\"")
+    assertContains(dslContent, "stages {")
+    assertContains(dslContent, "stage(\"Build\") {")
+    assertContains(dslContent, "displayName.set(\"Build Stage\")")
+    assertContains(dslContent, "job(\"build-job\") {")
+    assertContains(dslContent, "steps {")
+    assertContains(dslContent, "step(\"RunBuild\") {")
+    assertContains(dslContent, "script.set(\"\"\"./gradlew build\"\"\")")
+  }
 }
+

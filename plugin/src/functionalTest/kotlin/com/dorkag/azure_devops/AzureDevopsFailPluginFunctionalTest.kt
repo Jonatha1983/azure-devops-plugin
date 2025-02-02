@@ -55,7 +55,7 @@ class AzureDevopsFailPluginFunctionalTest {
                 trigger.set(listOf("main"))
                 vmImage.set("ubuntu-20.04")
                 stages {
-                    "Build" {
+                    stage("Build") {
                         // Missing required jobs configuration, should fail validation
                     }
                 }
@@ -120,7 +120,7 @@ class AzureDevopsFailPluginFunctionalTest {
         azurePipeline {
             name.set("Test Pipeline")
             stages {
-                "Build" {
+                stage("Build") {
                     // intentionally no jobs to trigger validation
                 }
             }

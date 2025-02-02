@@ -6,7 +6,7 @@ fun properties(key: String) = providers.gradleProperty(key)
 
 plugins { // Apply the Java Gradle plugin development plugin to add support for developing Gradle plugins
   `java-gradle-plugin`
-  id("com.gradle.plugin-publish") version "1.3.0"
+  id("com.gradle.plugin-publish") version "1.3.1"
 
   // Apply the Kotlin JVM plugin to add support for Kotlin.
   alias(libs.plugins.kotlin.jvm)
@@ -51,13 +51,14 @@ testing {
 }
 
 gradlePlugin {
-  vcsUrl = "https://github.com/Jonatha1983/azure-devops-plugin" // Define the plugin
+  vcsUrl = "https://github.com/Jonatha1983/azure-devops-plugin"
   @Suppress("unused") val azuredevops by plugins.creating {
     id = "com.dorkag.azuredevops"
     implementationClass = "com.dorkag.azure_devops.AzureDevopsPluginPlugin"
     displayName = "Azure DevOps Pipelines Plugin"
     description = "A plugin for generating Azure DevOps pipelines from Gradle configuration"
     tags = listOf("azure", "devops", "pipelines", "generator")
+    website = "https://github.com/Jonatha1983/azure-devops-plugin"
   }
 }
 

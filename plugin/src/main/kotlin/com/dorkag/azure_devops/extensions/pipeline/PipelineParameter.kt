@@ -14,6 +14,9 @@ abstract class PipelineParameter @Inject constructor(objects: ObjectFactory) {
     abstract val default: Property<String>
     private val values: ListProperty<String> = objects.listProperty(String::class.java)
 
+    // Expose `values` via a protected getter
+    internal fun tValues(): ListProperty<String> = values
+
     // Gradle NamedDomainObjectContainer will set this after creation
     lateinit var name: String
 

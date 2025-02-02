@@ -43,10 +43,10 @@ class StageConfigTest {
     val stageConfig = StageConfig(objects)
 
     stageConfig.jobs {
-      "buildJob" {
+      job("buildJob") {
         displayName.set("Build Job")
       }
-      "testJob" {
+      job("testJob") {
         displayName.set("Test Job")
       }
     }

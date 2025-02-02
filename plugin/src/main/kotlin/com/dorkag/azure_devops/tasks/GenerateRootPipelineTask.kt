@@ -1,123 +1,142 @@
 package com.dorkag.azure_devops.tasks
 
-import com.dorkag.azure_devops.dto.*
+import com.dorkag.azure_devops.dto.Pool
 import com.dorkag.azure_devops.dto.flow.Job
 import com.dorkag.azure_devops.dto.flow.Pipeline
 import com.dorkag.azure_devops.dto.flow.Stage
 import com.dorkag.azure_devops.dto.flow.Step
-import com.dorkag.azure_devops.dto.flow.Task
 import com.dorkag.azure_devops.extensions.AzurePipelineExtension
 import com.dorkag.azure_devops.extensions.config.JobConfig
-import com.dorkag.azure_devops.extensions.config.StageConfig
 import com.dorkag.azure_devops.extensions.config.StepConfig
-import com.dorkag.azure_devops.extensions.config.StrategyConfig
+import com.dorkag.azure_devops.utils.AzureCommentMetadataGenerator
 import com.dorkag.azure_devops.utils.YamlUtil
 import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.*
 
+
+@Suppress("LeakingThis")
+@CacheableTask
 abstract class GenerateRootPipelineTask : DefaultTask() {
+  @get:Internal
+  abstract val extensionProperty: Property<AzurePipelineExtension>
 
-    @Internal
-    lateinit var extension: AzurePipelineExtension
+  // subprojects
+  @get:Internal
+  abstract val subProjectsProperty: ListProperty<String>
 
-    @TaskAction
-    fun generate() {
-        // Create the Pipeline DTO
-        val pipelineDto = Pipeline(
-            name = extension.name.getOrElse("UnnamedPipeline"),
-            trigger = extension.trigger.get().ifEmpty { null },  // top-level list
-            pr = extension.pr.orNull?.branches?.get()?.ifEmpty { null },
-            pool = Pool(vmImage = extension.vmImage.getOrElse("ubuntu-latest")),
-            parameters = extension.parameters.map { it.toDto() },
-            variables = extension.variables.get().ifEmpty { null },
-            stages = mapStages(extension.getStages()),
-            resources = extension.getResources(),
-            schedules = null,  // optional
-            lockBehavior = extension.lockBehavior.orNull,
-            appendCommitMessageToRunName = extension.appendCommitMessageToRunName.orNull
+  @get:OutputFile
+  abstract val pipelineYaml: RegularFileProperty
+
+  @get:Input
+  abstract val pluginVersion: Property<String>
+
+  @get:Input
+  abstract val gradleVersion: Property<String>
+
+  init {
+    pipelineYaml.convention(project.layout.projectDirectory.file("azure-pipelines.yml"))
+    pluginVersion.convention("unknown")
+    gradleVersion.convention(project.gradle.gradleVersion)
+
+    subProjectsProperty.set(project.subprojects.filter { it.plugins.hasPlugin("com.dorkag.azuredevops") }
+                              .map { sp -> "${sp.name}|${sp.projectDir.relativeTo(project.projectDir).path}" })
+  }
+
+  @Input
+  fun getSubProjectRefs(): List<String> = subProjectsProperty.get()
+
+  @TaskAction
+  fun generate() {
+    val ext = extensionProperty.get()
+    val subStrings = subProjectsProperty.get()
+    val hasSubs = subStrings.isNotEmpty()
+
+    val pipelineDto: Pipeline = if (!hasSubs) { // single or multi but root only
+      buildStandalonePipeline(ext)
+    } else { // aggregator referencing subprojects
+      buildAggregatorPipeline(ext, subStrings)
+    }
+
+    val metadata = AzureCommentMetadataGenerator.generateMetadataComment(pluginVersion.get(), gradleVersion.get())
+    val finalYaml = YamlUtil.toYaml(pipelineDto)
+    pipelineYaml.get().asFile.writeText(metadata + "\n" + finalYaml)
+
+    logger.lifecycle(
+      if (hasSubs) "Root pipeline with subproject references => ${pipelineYaml.get().asFile}"
+      else "Single project pipeline => ${pipelineYaml.get().asFile}"
+    )
+  }
+
+  private fun buildStandalonePipeline(ext: AzurePipelineExtension): Pipeline {
+    val stageList = ext.stages.get().mapNotNull { (stageName, stageCfg) ->
+      if (!stageCfg.enabled.get()) null
+      else Stage(
+        stage = stageName,
+                 displayName = stageCfg.displayName.orNull,
+                 dependsOn = stageCfg.dependsOn.get().ifEmpty { null },
+                 condition = stageCfg.condition.orNull,
+                 variables = stageCfg.variables.get().ifEmpty { null },
+                 jobs = mapJobs(stageCfg.jobs.get())
+      )
+    }
+
+    return Pipeline(
+      name = ext.name.getOrElse("UnnamedPipeline"),
+                    trigger = ext.trigger.get().ifEmpty { null },
+                    pr = ext.pr.orNull?.branches?.get()?.ifEmpty { null },
+                    parameters = ext.parameters.map { it.toDto() },
+                    pool = Pool(vmImage = ext.vmImage.getOrElse("ubuntu-latest")),
+                    variables = ext.variables.get().ifEmpty { null },
+                    resources = ext.getResources(),
+                    schedules = null,
+                    lockBehavior = ext.lockBehavior.orNull,
+                    appendCommitMessageToRunName = ext.appendCommitMessageToRunName.orNull,
+                    stages = stageList
+    )
+  }
+
+  private fun buildAggregatorPipeline(ext: AzurePipelineExtension, subStrings: List<String>): Pipeline { // references subprojects as templates
+    return Pipeline(
+      name = ext.name.getOrElse("UnnamedPipeline"),
+                    trigger = ext.trigger.get().ifEmpty { null },
+                    pr = ext.pr.orNull?.branches?.get()?.ifEmpty { null },
+                    parameters = ext.parameters.map { it.toDto() },
+                    pool = Pool(vmImage = ext.vmImage.getOrElse("ubuntu-latest")),
+                    variables = ext.variables.get().ifEmpty { null },
+                    resources = ext.getResources(),
+                    schedules = null,
+                    lockBehavior = ext.lockBehavior.orNull,
+                    appendCommitMessageToRunName = ext.appendCommitMessageToRunName.orNull,
+                    stages = subStrings.map { s ->
+                      val (_, subPath) = s.split("|", limit = 2)
+                      Stage(template = "$subPath/azure-pipelines.yml")
+                    })
+  }
+
+  private fun mapJobs(jobs: Map<String, JobConfig>): List<Job> {
+    return jobs.map { (jobName, jobCfg) ->
+      Job(
+        job = jobName, displayName = jobCfg.displayName.orNull, steps = mapSteps(jobCfg.steps.get())
+      )
+    }
+  }
+
+  @Suppress("DuplicatedCode")
+  private fun mapSteps(steps: Map<String, StepConfig>): List<Step> {
+    return steps.map { (_, stepCfg) ->
+      if (stepCfg.taskName.isPresent) { // task step
+        Step(
+          task = stepCfg.taskName.get(), displayName = stepCfg.displayName.orNull, inputs = stepCfg.inputs.get().ifEmpty { null })
+      } else if (stepCfg.script.isPresent) { // script step
+        Step(
+          script = stepCfg.script.orNull, displayName = stepCfg.displayName.orNull
         )
-
-        val yaml = YamlUtil.toYaml(pipelineDto)
-        val outputFile = project.file("azure-pipelines.yml")
-        outputFile.writeText(yaml)
-
-        logger.lifecycle("Pipeline YAML file generated at: ${outputFile.absolutePath}\n\n$yaml")
+      } else {
+        Step(script = "echo 'no script or task'")
+      }
     }
-
-    private fun mapStages(stagesMap: Map<String, StageConfig>): List<Stage> {
-        return stagesMap.mapNotNull { (stageName, stageConfig) ->
-            if (!stageConfig.enabled.get()) {
-                null // skip disabled
-            } else {
-                val stageCondition = stageConfig.condition.orNull
-                val stageVars = stageConfig.variables.get()
-
-                // Convert the jobs from DSL to a DTO list
-                val stageJobs = mapJobs(stageConfig.jobs.get())
-
-                Stage(
-                    stage = stageName,
-                    displayName = stageConfig.displayName.orNull,
-                    dependsOn = stageConfig.dependsOn.get().ifEmpty { null },
-                    condition = stageCondition,
-                    variables = if (stageVars.isEmpty()) null else stageVars,
-                    template = null,
-                    parameters = null,
-                    jobs = stageJobs  // <--- NOW we store the jobs in the Stage DTO
-                )
-            }
-        }
-    }
-
-    private fun mapJobs(jobsMap: Map<String, JobConfig>): List<Job> {
-        return jobsMap.map { (jobName, jobCfg) ->
-            val jobCondition = jobCfg.condition.orNull
-            val jobVars = jobCfg.variables.get()
-            val stepsDto = mapSteps(jobCfg.steps.get())
-
-            Job(
-                job = jobName,
-                displayName = jobCfg.displayName.orNull,
-                dependsOn = jobCfg.dependsOn.get().ifEmpty { null },
-                condition = jobCondition,
-                continueOnError = jobCfg.continueOnError.orNull?.takeIf { it },
-                timeoutInMinutes = jobCfg.timeoutInMinutes.orNull?.takeIf { it != 60 },
-                strategy = jobCfg.strategy.orNull?.toDto(),
-                variables = if (jobVars.isEmpty()) null else jobVars,
-                steps = stepsDto
-            )
-        }
-    }
-
-    private fun mapSteps(stepsMap: Map<String, StepConfig>): List<Step> {
-        return stepsMap.map { (_, stepCfg) ->
-            // If stepCfg.taskName is not empty, it's a "task" step
-            if (!stepCfg.taskName.orNull.isNullOrEmpty()) {
-                // Convert to the Step DTO with 'task: SomeTask@Version'
-                Step(
-                    script = null, displayName = stepCfg.displayName.orNull, task = Task(
-                        name = stepCfg.taskName.get(), inputs = stepCfg.inputs.get().ifEmpty { null })
-                )
-            } else if (!stepCfg.script.orNull.isNullOrBlank()) {
-                // It's a script step
-                Step(
-                    script = stepCfg.script.orNull, displayName = stepCfg.displayName.orNull, task = null
-                )
-            } else {
-                // fallback if user didn't set script nor task
-                Step(
-                    script = "echo 'No script or task was defined'",
-                    displayName = stepCfg.displayName.orNull,
-                    task = null
-                )
-            }
-        }
-    }
-
-
-    private fun StrategyConfig.toDto(): Strategy {
-        return Strategy(
-            type = this.type.orNull, maxParallel = this.maxParallel.orNull, matrix = this.matrix.get().ifEmpty { null })
-    }
+  }
 }

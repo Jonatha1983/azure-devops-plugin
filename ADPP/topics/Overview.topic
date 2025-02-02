@@ -1,30 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic
-        SYSTEM "https://resources.jetbrains.com/writerside/1.0/xhtml-entities.dtd">
+  SYSTEM "https://resources.jetbrains.com/writerside/1.0/xhtml-entities.dtd">
 <topic xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/topic.v2.xsd"
        title="Overview" id="Overview">
 
-    <p>
-        The Azure DevOps Pipeline Gradle Plugin simplifies the management of Azure DevOps pipeline configurations by
-        allowing you to define your pipelines using Gradle DSL.<br/>
-        This plugin enables you to generate YAML pipeline
-        configurations directly from your Gradle build scripts, validate pipeline configurations, and even convert
-        existing YAML pipelines to Gradle DSL.
-    </p>
+  <p>
+    The Azure DevOps Pipeline Gradle Plugin simplifies the management of Azure DevOps pipeline configurations by
+    allowing you to define your pipelines using Gradle DSL.<br/>
+    This plugin enables you to generate YAML pipeline
+    configurations files directly from your Gradle build scripts, validate pipeline configurations, and even convert
+    existing YAML pipelines to the expected Gradle DSL.
+  </p>
 
-    <chapter title="Features" id="featurs-overview-chapter">
-        <list type="bullet" id="features-bullets">
-            <li>Generate Azure DevOps pipeline YAML files from Gradle DSL</li>
-            <li>Support for a multi-project builds with template inheritance</li>
-            <li>Pipeline validation task to ensure generated YAML matches expectations</li>
-            <li>YAML to DSL conversion utility for existing pipelines</li>
-        </list>
-    </chapter>
-    <sub>
-        <img src="azure-pipeline-plugin-logo.png" alt="azure-pipeline-plugin-logo" style="block" theme="dark"
-             border-effect="line"/>
-    </sub>
+  <sub>
+    <img src="azure-pipeline-plugin-logo.png" alt="azure-pipeline-plugin-logo" style="block" theme="dark"
+         border-effect="line"/>
+  </sub>
 
+  <chapter title="Features" id="features-overview-chapter">
+    <list type="bullet" id="features-bullets">
+      <li>Generate Azure DevOps pipeline YAML files from Gradle DSL</li>
+      <li>Support for a multi-project builds with template inheritance</li>
+      <li>Pipeline validation task to ensure generated YAML matches expectations</li>
+      <li>YAML to DSL conversion utility for existing pipelines</li>
+    </list>
+  </chapter>
+
+
+  <chapter title="Requirements" id="requirements-overview-chapter">
+    <list type="bullet" id="requirements-bullets">
+      <li>Gradle <b>8.9+</b></li>
+      <li>Azure DevOps account</li>
+    </list>
+  </chapter>
 
 </topic>

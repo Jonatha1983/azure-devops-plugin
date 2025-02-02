@@ -5,6 +5,8 @@
        xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/topic.v2.xsd"
        title="Tasks" id="Tasks">
 
+  <primary-label ref="azd"/>
+  <secondary-label ref="azd_version"/>
   <p>
     The Azure DevOps Gradle plugin provides several tasks for generating and managing Azure Pipeline configurations.
     Each task serves a specific purpose and can be configured to suit your needs.

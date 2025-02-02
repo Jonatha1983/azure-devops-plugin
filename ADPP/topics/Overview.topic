@@ -5,6 +5,9 @@
        xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/topic.v2.xsd"
        title="Overview" id="Overview">
 
+  <primary-label ref="azd"/>
+  <secondary-label ref="azd_version"/>
+
   <p>
     The Azure DevOps Pipeline Gradle Plugin simplifies the management of Azure DevOps pipeline configurations by
     allowing you to define your pipelines using Gradle DSL.<br/>

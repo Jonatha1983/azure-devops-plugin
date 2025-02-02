@@ -7,11 +7,13 @@ on:
 jobs:
   gradleRelease:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
         with:
-          # If you want the commit on which the release was created:
           ref: ${{ github.event.release.tag_name }}
 
       # Set up Java environment if needed
@@ -25,12 +27,58 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      # Provide environment variables for Gradle Publish Plugin
+      # Extract Changelog from Release Notes
+      - name: Export Properties
+        id: properties
+        shell: bash
+        run: |
+          CHANGELOG="$(cat << 'EOM' | sed -e 's/^[[:space:]]*$//g' -e '/./,$!d'
+          ${{ github.event.release.body }}
+          EOM
+          )"
+          
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+        # Patch CHANGELOG.md with the release notes
+      - name: Patch Changelog
+        if: ${{ steps.properties.outputs.changelog != '' }}
+        env:
+          CHANGELOG: ${{ steps.properties.outputs.changelog }}
+        run: |
+          ./gradlew patchChangelog --release-note="$CHANGELOG"
+
+        # Commit and Push Changelog Update
+      - name: Create Pull Request for Changelog Update
+        if: ${{ steps.properties.outputs.changelog != '' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ github.event.release.tag_name }}"
+          BRANCH="changelog-update-$VERSION"
+          LABEL="release changelog"
+          
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          
+          git checkout -b "$BRANCH"
+          git commit -am "Changelog update - $VERSION"
+          git push --set-upstream origin "$BRANCH"
+          
+          gh label create "$LABEL" \
+            --description "Pull requests with release changelog update" \
+            --force || true
+          
+          gh pr create \
+            --title "Changelog update - \`$VERSION\`" \
+            --body "This PR updates the \`CHANGELOG.md\` file for the \`$VERSION\` version." \
+            --label "$LABEL" \
+            --head "$BRANCH"
+
+        # Publish to Gradle Plugin Portal
       - name: Publish to Gradle Plugin Portal
         run: ./gradlew publishPlugins
         env:
           GRADLE_PUBLISH_KEY: ${{ secrets.GRADLE_PUBLISH_KEY }}
           GRADLE_PUBLISH_SECRET: ${{ secrets.GRADLE_PUBLISH_SECRET }}
-          # If your plugin checks for these, they will be set
-
-      # Optionally add steps to confirm success or upload logs

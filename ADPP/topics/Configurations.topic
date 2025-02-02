@@ -5,6 +5,8 @@
        xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/topic.v2.xsd"
        title="Configurations" id="Configurations">
 
+  <primary-label ref="azd"/>
+  <secondary-label ref="azd_version"/>
   <p>
     This reference describes all available configuration options for the Azure DevOps Gradle plugin.
     The plugin uses a type-safe DSL to configure Azure Pipelines, organized into different configuration levels.

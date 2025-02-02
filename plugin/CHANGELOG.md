@@ -6,8 +6,6 @@ Azure DevOps Pipelines Plugin
 
 ### Added
 
-- Initial documentation and setup of the plugin
-
 ### Changed
 
 ### Deprecated
@@ -18,4 +16,11 @@ Azure DevOps Pipelines Plugin
 
 ### Security
 
-[[Unreleased]]: https://github.com/Jonatha1983/azure-devops-plugin/commits
+## [[1.0.6]] - 2025-02-02
+
+### Added
+
+- Initial documentation and setup of the plugin
+
+[[Unreleased]]: https://github.com/Jonatha1983/azure-devops-plugin/compare/v1.0.6...HEAD
+[1.0.6]: https://github.com/Jonatha1983/azure-devops-plugin/commits/v1.0.6

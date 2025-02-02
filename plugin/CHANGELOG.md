@@ -6,6 +6,8 @@ Azure DevOps Pipelines Plugin
 
 ### Added
 
+- More documentation and examples.
+
 ### Changed
 
 ### Deprecated

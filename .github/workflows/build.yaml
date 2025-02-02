@@ -172,7 +172,6 @@ jobs:
 
   test-docs:
     name: Test Docs
-    if: github.event_name != 'pull_request'
     needs: build-docs
     runs-on: ubuntu-latest
     steps:

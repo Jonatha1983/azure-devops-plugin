@@ -21,6 +21,13 @@
          border-effect="line"/>
   </sub>
 
+  <chapter title="Requirements" id="requirements-overview-chapter">
+    <list type="bullet" id="requirements-bullets">
+      <li>Gradle Project with <b>Kotlin DSL</b> and version <b>8.9+</b></li>
+      <li>Azure DevOps account</li>
+    </list>
+  </chapter>
+
   <chapter title="Features" id="features-overview-chapter">
     <list type="bullet" id="features-bullets">
       <li>Generate Azure DevOps pipeline YAML files from Gradle DSL</li>
@@ -30,12 +37,5 @@
     </list>
   </chapter>
 
-
-  <chapter title="Requirements" id="requirements-overview-chapter">
-    <list type="bullet" id="requirements-bullets">
-      <li>Gradle <b>8.9+</b></li>
-      <li>Azure DevOps account</li>
-    </list>
-  </chapter>
 
 </topic>

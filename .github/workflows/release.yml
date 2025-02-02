@@ -1,4 +1,4 @@
-name: Gradle Plugin Portal Release
+name: Release
 
 on:
   release:

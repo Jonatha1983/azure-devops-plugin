@@ -1,7 +1,13 @@
 # Azure DevOps Pipeline Plugin
 
+[![GitHub stars](https://img.shields.io/github/stars/Jonatha1983/azure-devops-plugin?style=social)](https://github.com/Jonatha1983/azure-devops-plugin/stargazers)
 [![Build](https://github.com/Jonatha1983/azure-devops-plugin/actions/workflows/build.yaml/badge.svg?branch=main)](https://github.com/Jonatha1983/azure-devops-plugin/actions/workflows/build.yaml)
 [![codecov](https://codecov.io/gh/Jonatha1983/azure-devops-plugin/graph/badge.svg?token=7011WZ10IR)](https://codecov.io/gh/Jonatha1983/azure-devops-plugin)
+[![GitHub release](https://img.shields.io/github/v/release/Jonatha1983/azure-devops-plugin?label=Latest%20Release&style=flat-square&color=blue)](https://github.com/Jonatha1983/azure-devops-plugin/releases/latest)
+
+⚠️ **Important Notice**:  
+This plugin is designed exclusively for use with **Gradle Kotlin DSL** (`build.gradle.kts`) and does not support **Groovy DSL** (`build.gradle`). Please ensure your project is
+configured accordingly.
 
 The Azure DevOps Pipeline Plugin is a [Gradle](https://docs.gradle.org/current/userguide/userguide.html) plugin that
 allows you to generate Azure DevOps pipeline YAML files from your Gradle project.

@@ -15,4 +15,8 @@
         <description>Created after removal of "Concepts" from Azure DevOps Pipelines Plugin</description>
         <accepts>Concepts.html</accepts>
     </rule>
+    <rule id="c5a3a16">
+        <description>Created after removal of "Examples" from</description>
+        <accepts>Examples.html</accepts>
+    </rule>
 </rules>

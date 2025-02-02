@@ -3,7 +3,7 @@
   SYSTEM "https://resources.jetbrains.com/writerside/1.0/product-profile.dtd">
 
 <instance-profile id="adpp"
-                 name="Azure DevOps Pipelines Plugin"
+                  name=" "
                   start-page="Overview.topic">
 
   <toc-element topic="Azure-DevOps-Pipeline-Plugin.topic">
@@ -13,6 +13,5 @@
       <toc-element topic="Tasks.topic"/>
       <toc-element topic="Configurations.topic"/>
     </toc-element>
-    <toc-element topic="Examples.topic"/>
   </toc-element>
 </instance-profile>

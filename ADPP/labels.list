@@ -3,5 +3,5 @@
 <labels xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/labels.xsd">
   <primary-label id="azd" short-name="azure devops pipeline" name="Azure DevOps Pipeline Plugin" color="green">Azure DevOps Pipeline</primary-label>
-  <secondary-label id="azd_version" name="V1.0.5" color="blue">New in version 2024.3</secondary-label>
+  <secondary-label id="azd_version" name="V1.0.7" color="blue">New in version 1.0.7</secondary-label>
 </labels>

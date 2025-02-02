@@ -4,8 +4,8 @@
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
   <variables>
-    <primary-color>blueberry</primary-color>
-    <link-color>#5CEDE8</link-color>
+    <primary-color>#5169EC</primary-color>
+    <link-color>#5CC6ED</link-color>
     <custom-favicons>azure-pipeline-plugin-logo.png</custom-favicons>
     <header-logo>gradle-azure-logo.svg</header-logo>
     <resizable-sidebar>true</resizable-sidebar>

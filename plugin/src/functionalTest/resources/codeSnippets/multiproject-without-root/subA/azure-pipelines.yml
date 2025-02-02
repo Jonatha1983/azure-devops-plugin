@@ -1,0 +1,22 @@
+name: SubA Pipeline
+trigger:
+  - main
+pool:
+  vmImage: ubuntu-latest
+stages:
+  - stage: Build
+    displayName: Build Stage
+    jobs:
+      - job: buildJob
+        displayName: Build
+        steps:
+          - script: ./gradlew build
+            displayName: Build
+  - stage: Test
+    displayName: Test Stage
+    jobs:
+      - job: testJob
+        displayName: Test
+        steps:
+          - script: ./gradlew test
+            displayName: Run Tests

@@ -5,136 +5,193 @@
        xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/topic.v2.xsd"
        title="Usage &amp; DSL" id="Usage-DSL">
 
-  <!--The plugin provides a DSL for stages, jobs, and steps:
-  azurePipeline {
-  name.set("Example Pipeline")
-  trigger.set(listOf("main"))
-
-  stages {
-      stage("Build") {
-          displayName.set("Build Stage")
-          jobs {
-              job("buildJob") {
-                  steps {
-                      step("gradleBuild") {
-                          task("Gradle@3") {
-                              displayName.set("Run Gradle Build")
-                              inputs.put("tasks","clean build")
-                          }
-                      }
-                  }
-              }
-          }
-      }
-  }
-}	•	stages → call stage("Name")
-•	jobs → call job("Name")
-•	steps → call step("Name")
-•	task(…) → references an Azure Pipelines task, e.g. "Gradle@3", "Maven@3", "Npm@1", etc.
-•	script(…) → simple script steps.
-
-Top-Level Fields
-•	name: Pipeline name (name.set("My Pipeline"))
-•	trigger: Branch triggers (list property).
-•	pr: Pull Request triggers.
-•	vmImage: Build agent image (e.g. ubuntu-latest).
-•	variables: Key-value environment variables for pipeline.
-•	parameters: List of parameter definitions for paramName → defaultValue.
-
-Stage-Level Fields
-•	displayName
-•	dependsOn: A list of other stage names.
-•	condition: e.g. always()
-•	variables: Key-value environment variables.
-
-Job-Level Fields
-•	displayName
-•	dependsOn (list)
-•	continueOnError
-•	steps (a map or list of steps)
-
-Step-Level Fields
-•	script: Inline script content.
-•	task: e.g. "Gradle@3".
-•	displayName
-•	inputs: For tasks.
-•	env, condition, etc.
-  -->
-
   <chapter title="Basic Usage" id="basic-usage">
-    <p>
-      The plugin provides a DSL for stages, jobs, and steps:
-    </p>
-    <code-block lang="kotlin">
-      azurePipeline {
-        name.set("Example Pipeline")
-        trigger.set(listOf("main"))
+    <p>Here's how to define a simple pipeline with a single Gradle task:</p>
 
-        stages {
-          stage("Build") {
-            displayName.set("Build Stage")
-            jobs {
-              job("buildJob") {
-                steps {
-                  step("gradleBuild") {
-                    task("Gradle@3") {
-                      displayName.set("Run Gradle Build")
-                      inputs.put("tasks", "clean build")
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    </code-block>
-    <deflist>
-      <def title="Stages" id="stages">stages → call stage("Name")</def>
-      <def title="Jobs" id="jobs">jobs → call job("Name")</def>
-      <def title="Steps" id="steps-1">steps → call step("Name")</def>
-      <def title="Task" id="task-metadata">task(…) → references an Azure Pipelines task, e.g. "Gradle@3", "Maven@3", "Npm@1", etc.</def>
-      <def title="Script Steps" id="script-steps">script(…) → simple script steps.</def>
-    </deflist>
-    <p>
-      <b>Top-Level Fields</b>
-    </p>
-    <deflist>
-      <def title="Name" id="name">name: Pipeline name (name.set("My Pipeline"))</def>
-      <def title="Trigger" id="trigger">trigger: Branch triggers (list property).</def>
-      <def title="Pull Request Triggers" id="pull-request-triggers">pr: Pull Request triggers.</def>
-      <def title="VM Image" id="vmImage">vmImage: Build agent image (e.g. ubuntu-latest).</def>
-      <def title="Variables" id="variables-1">variables: Key-value environment variables for pipeline.</def>
-      <def title="Parameters" id="parameters">parameters: List of parameter definitions for paramName → defaultValue.</def>
-    </deflist>
-    <p>
-      <b>Stage-Level Fields</b>
-    </p>
-    <deflist>
-
-      <def title="Display Name" id="display-name-2">displayName</def>
-      <def title="Depends On" id="depends-on-2">dependsOn: A list of other stage names.</def>
-      <def title="Condition" id="condition">condition: e.g. always()</def>
-      <def title="Variables" id="variables">variables: Key-value environment variables.</def>
-    </deflist>
-    <p>
-      <b>Job-Level Fields</b>
-    </p>
-    <deflist>
-      <def title="Display Name" id="display-name">displayName</def>
-      <def title="Depends On" id="depends-on">dependsOn (list)</def>
-      <def title="Continue on Error" id="continue-on-error">continueOnError</def>
-      <def title="Steps" id="steps">steps (a map or list of steps)</def>
-    </deflist>
-    <p>
-      <b>Step-Level Fields</b>
-    </p>
-    <deflist>
-      <def title="Script" id="script">script: Inline script content.</def>
-      <def title="Task" id="task">task: e.g. "Gradle@3".</def>
-      <def title="Display Name" id="display-name-1">displayName</def>
-      <def title="Inputs" id="inputs">inputs: For tasks.</def>
-      <def title="Environment and Condition" id="environment-and-condition">env, condition, etc.</def>
-    </deflist>
+    <tabs id="basic-tabs">
+      <tab id="basic-dsl" title="Gradle DSL">
+        <code-block lang="kotlin" src="../../plugin/src/functionalTest/resources/codeSnippets/basic/build.gradle.kts"/>
+      </tab>
+      <tab id="basic-yaml" title="Generated YAML">
+        <code-block lang="yaml" src="../../plugin/src/functionalTest/resources/codeSnippets/basic/basic-example.yml"/>
+      </tab>
+    </tabs>
   </chapter>
+
+  <chapter title="Multiple Steps" id="multiple-steps">
+    <p>Pipeline with multiple Gradle steps in sequence:</p>
+
+    <tabs id="multiple-tabs">
+      <tab id="multiple-dsl" title="Gradle DSL">
+                <code-block lang="kotlin">
+                    azurePipeline {
+                      name.set("Multiple Steps Pipeline")
+                      vmImage.set("ubuntu-latest")
+
+                      stages {
+                        stage("BuildStage") {
+                          displayName.set("Build Stage")
+                          jobs {
+                            job("GradleBuildJob") {
+                              steps {
+                                step("GradleClean") {
+                                  task("Gradle@3") {
+                                    displayName.set("Run Gradle Clean")
+                                    inputs.put("tasks", "clean")
+                                  }
+                                }
+                                step("GradleTest") {
+                                  task("Gradle@3") {
+                                    displayName.set("Run Gradle Test")
+                                    inputs.put("tasks", "test")
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                </code-block>
+      </tab>
+      <tab id="multiple-yaml" title="Generated YAML" group-key="multiple">
+                <code-block lang="yaml">
+                    name: Multiple Steps Pipeline
+                    trigger:
+                      - main
+                    pool:
+                      vmImage: ubuntu-latest
+
+                    stages:
+                      - stage: BuildStage
+                        displayName: Build Stage
+                        jobs:
+                          - job: GradleBuildJob
+                            steps:
+                              - task: Gradle@3
+                                displayName: Run Gradle Clean
+                                inputs:
+                                  tasks: clean
+                              - task: Gradle@3
+                                displayName: Run Gradle Test
+                                inputs:
+                                  tasks: test
+                </code-block>
+      </tab>
+    </tabs>
+  </chapter>
+
+  <chapter title="Multi-Project Setup" id="multi-project">
+    <p>Configuring a multi-project build with shared stages:</p>
+
+    <tabs id="multi-tabs-root">
+      <tab id="multi-root-dsl" title="Root Project DSL">
+                <code-block lang="kotlin">
+                    // Root build.gradle.kts
+                    azurePipeline {
+                      name.set("Root Pipeline")
+                      vmImage.set("ubuntu-20.04")
+
+                      stages {
+                        stage("Build") {
+                          displayName.set("Root Build Stage")
+                          jobs {
+                            job("rootBuildJob") {
+                              displayName.set("RootBuildJob")
+                              steps {
+                                step("rootBuildStep") {
+                                  script.set("./gradlew build")
+                                  displayName.set("Root Build Step")
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                </code-block>
+      </tab>
+      <tab id="multi-sub-dsl" title="Subproject DSL">
+                <code-block lang="kotlin">
+                    // subproject/build.gradle.kts
+                    azurePipeline {
+                      stages {
+                        declaredStage("Build") // Reuse root's Build stage
+                      }
+                    }
+                </code-block>
+      </tab>
+      <tab id="multi-yaml" title="Generated YAML">
+                <code-block lang="yaml">
+                    # Root azure-pipelines.yml
+                    name: Root Pipeline
+                    trigger:
+                      - main
+                    pool:
+                      vmImage: ubuntu-20.04
+
+                    stages:
+                      - stage: Build
+                        displayName: Root Build Stage
+                        jobs:
+                          - job: rootBuildJob
+                            displayName: RootBuildJob
+                            steps:
+                              - script: ./gradlew build
+                                displayName: Root Build Step
+
+                    # Subproject references root's Build stage
+                </code-block>
+      </tab>
+    </tabs>
+  </chapter>
+
+  <chapter title="Multi-Project Setup with Root Pipeline" id="multi-project-root">
+    <p>Pipeline configuration for multi-project builds where both root and subprojects have pipelines:</p>
+
+    <tabs id="multi-root-tabs">
+      <tab id="multi-root-settings" title="Settings">
+        <code-block lang="kotlin" src="../../plugin/src/functionalTest/resources/codeSnippets/multiproject-with-root/settings.gradle.kts"/>
+      </tab>
+      <tab id="multi-root-build" title="Root build.gradle.kts">
+        <code-block lang="kotlin" src="../../plugin/src/functionalTest/resources/codeSnippets/multiproject-with-root/build.gradle.kts"/>
+      </tab>
+      <tab id="multi-root-suba" title="subA/build.gradle.kts">
+        <code-block lang="kotlin" src="../../plugin/src/functionalTest/resources/codeSnippets/multiproject-with-root/subA/build.gradle.kts"/>
+      </tab>
+      <tab id="multi-root-subb" title="subB/build.gradle.kts">
+        <code-block lang="kotlin" src="../../plugin/src/functionalTest/resources/codeSnippets/multiproject-with-root/subB/build.gradle.kts"/>
+      </tab>
+      <tab id="multi-root-yaml" title="Generated Root YAML">
+        <code-block lang="yaml" src="../../plugin/src/functionalTest/resources/codeSnippets/multiproject-with-root/azure-pipelines.yml"/>
+      </tab>
+      <tab id="multi-root-suba-yaml" title="Generated subA YAML">
+        <code-block lang="yaml" src="../../plugin/src/functionalTest/resources/codeSnippets/multiproject-with-root/subA/azure-pipelines.yml"/>
+      </tab>
+      <tab id="multi-root-subb-yaml" title="Generated subB YAML">
+        <code-block lang="yaml" src="../../plugin/src/functionalTest/resources/codeSnippets/multiproject-with-root/subB/azure-pipelines.yml"/>
+      </tab>
+    </tabs>
+  </chapter>
+
+  <chapter title="Multi-Project Setup without Root Pipeline" id="multi-project-no-root">
+    <p>Pipeline configuration for multi-project builds where only subprojects have pipelines. When the root project doesn't apply the plugin, each subproject defines its own
+      independent pipeline:</p>
+
+    <tabs id="multi-no-root-tabs">
+      <tab id="multi-no-root-settings" title="Settings">
+        <code-block lang="kotlin" src="../../plugin/src/functionalTest/resources/codeSnippets/multiproject-without-root/settings.gradle.kts"/>
+      </tab>
+      <tab id="multi-no-root-build" title="Root build.gradle.kts">
+        <code-block lang="kotlin" src="../../plugin/src/functionalTest/resources/codeSnippets/multiproject-without-root/build.gradle.kts"/>
+      </tab>
+      <tab id="multi-without-root-suba" title="subA/build.gradle.kts">
+        <code-block lang="kotlin" src="../../plugin/src/functionalTest/resources/codeSnippets/multiproject-without-root/subA/build.gradle.kts"/>
+      </tab>
+      <tab id="multi-without-root-suba-yaml" title="Generated subA YAML">
+        <code-block lang="kotlin" src="../../plugin/src/functionalTest/resources/codeSnippets/multiproject-without-root/subA/azure-pipelines.yml"/>
+      </tab>
+    </tabs>
+  </chapter>
+
 </topic>

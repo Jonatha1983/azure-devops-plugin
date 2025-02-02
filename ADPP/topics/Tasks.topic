@@ -5,72 +5,161 @@
        xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/topic.v2.xsd"
        title="Tasks" id="Tasks">
 
-  <!--
-  generateRootPipeline
+  <p>
+    The Azure DevOps Gradle plugin provides several tasks for generating and managing Azure Pipeline configurations.
+    Each task serves a specific purpose and can be configured to suit your needs.
+  </p>
 
-Generates a root azure-pipelines.yml from the root DSL. If subprojects apply the plugin, references them as templates.
+  <chapter title="Core Tasks" id="core-tasks">
+    <deflist type="medium">
+      <def title="generatePipeline" id="generate-pipeline">
+        Primary task that generates all pipeline YAML files.
+        <p>For single projects:</p>
+        <list type="bullet">
+          <li>Generates the single azure-pipelines.yml file</li>
+          <li>Validates configuration before generation</li>
+          <li>Create the necessary directories if they don't exist</li>
+        </list>
+        <p>For multi-projects:</p>
+        <list type="bullet">
+          <li>Generates the root pipeline if plugin applied to root</li>
+          <li>Generates subproject pipelines for each subproject with plugin</li>
+          <li>Handles template references between root and subprojects</li>
+        </list>
+        <code-block lang="bash">
+                    ./gradlew generatePipeline
+                </code-block>
+      </def>
 
-generateSubprojectTemplate
+      <def title="generateRootPipeline" id="generate-root-pipeline">
+        Generate the root project's pipeline configuration.
+        <p>Features:</p>
+        <list type="bullet">
+          <li>Create azure-pipelines.yml in root project directory</li>
+          <li>Includes references to subproject pipelines if they exist</li>
+          <li>Validates root project configuration</li>
+        </list>
+        <code-block lang="bash">
+                    ./gradlew generateRootPipeline
+                </code-block>
+      </def>
 
-For each subproject that applies the plugin, run:
-  -->
-  <chapter title="Tasks" id="tasks-tasks">
-    <p>
-      The plugin provides the following tasks:
-    </p>
-    <list type="bullet" id="tasks-list">
-      <li>
-        <b>generateRootPipeline</b>
-        <p>
-          Generates a root <code>azure-pipelines.yml</code> from the root DSL. If subprojects apply the plugin, reference them as templates.
-        </p>
+      <def title="generateSubprojectTemplate" id="generate-subproject-template">
+        Generates pipeline configuration for a subproject.
+        <p>Behavior depends on root project:</p>
+        <list type="bullet">
+          <li>If root applied the plugin: Creates template for root to reference</li>
+          <li>If root didn't apply the plugin: Create a standalone pipeline</li>
+          <li>Can reuse stages defined in root project</li>
+        </list>
+        <code-block lang="bash">
+                    ./gradlew :subproject:generateSubprojectTemplate
+                </code-block>
+      </def>
+    </deflist>
+  </chapter>
+
+  <chapter title="Validation Tasks" id="validation-tasks">
+    <deflist type="medium">
+      <def title="validatePipeline" id="validate-pipeline">
+        Validates pipeline configuration before generation.
+        <p>Checks performed:</p>
+        <list type="bullet">
+          <li>Stage validation:
+            <list>
+              <li>Each stage has at least one job</li>
+              <li>Stage names are unique</li>
+              <li>Referenced stages exist in the root project</li>
+            </list>
+          </li>
+          <li>Job validation:
+            <list>
+              <li>Each job has at least one step</li>
+              <li>Job names are unique within stage</li>
+              <li>Job dependencies exist</li>
+            </list>
+          </li>
+          <li>Step validation:
+            <list>
+              <li>Task steps have required inputs</li>
+              <li>Script steps have content</li>
+              <li>Step names are unique within the job</li>
+            </list>
+          </li>
+        </list>
+        <code-block lang="bash">
+                    ./gradlew validatePipeline
+                </code-block>
+      </def>
+    </deflist>
+  </chapter>
+
+  <chapter title="Utility Tasks" id="utility-tasks">
+    <deflist type="medium">
+      <def title="convertYamlToDsl" id="convertibility">
+        Converts existing YAML pipelines to plug in a DSL format.
+        <p>Features:</p>
+        <list type="bullet">
+          <li>Converts single pipeline YAML files</li>
+          <li>Handles multi-stage pipelines</li>
+          <li>Preserves comments and structure</li>
+          <li>Generates equivalent Kotlin DSL code</li>
+        </list>
+        <code-block lang="bash">
+                    ./gradlew convertYamlToDsl --input=existing-pipeline.yml
+                </code-block>
+      </def>
+    </deflist>
+  </chapter>
+
+  <chapter title="Task Dependencies" id="task-dependencies">
+    <p>Tasks are organized with the following dependencies:</p>
+
+    <list type="bullet">
+      <li><code>generatePipeline</code>
+        <list>
+          <li>Depends on <code>validatePipeline</code></li>
+          <li>Depends on <code>generateRootPipeline</code> if root applied the plugin</li>
+          <li>Depends on each subproject's <code>generateSubprojectTemplate</code></li>
+        </list>
       </li>
-      <li>
-        <b>generateSubprojectTemplate</b>
-        <p>
-          For each subproject that applies the plugin, run:
-        </p>
+      <li><code>generateRootPipeline</code>
+        <list>
+          <li>Depends on <code>validatePipeline</code></li>
+        </list>
       </li>
-
-      <!--
-      Generates subproj/azure-pipelines.yml snippet or standalone pipeline.
-
-  generatePipeline
-
-  A convenience aggregator that depends on both generateRootPipeline and each subproject’s generateSubprojectTemplate. If only subprojects apply the plugin, or only root does, it acts accordingly.
-
-  validatePipeline
-
-  Validates that each stage has at least one job, each job has at least one step, etc. Fails the build if DSL is incomplete.
-
-  convertYamlToDsl
-
-  If you already have an Azure Pipelines YAML, you can convert it to DSL stubs:
-      -->
-
-      <li>
-        <b>generatePipeline</b>
-        <p>
-          A convenience aggregator that depends on both <code>generateRootPipeline</code> and each subproject’s <code>generateSubprojectTemplate</code>. If only subprojects apply
-          the plugin, or only root does, it acts accordingly.
-        </p>
+      <li><code>generateSubprojectTemplate</code>
+        <list>
+          <li>Depends on <code>validatePipeline</code></li>
+          <li>May depend on root project's configuration</li>
+        </list>
       </li>
-      <li>
-        <b>validatePipeline</b>
-        <p>
-          Validates that each stage has at least one job, each job has at least one step, etc. Fails the build if DSL is incomplete.
-        </p>
-      </li>
-      <li>
-        <b>convertYamlToDsl</b>
-        <p>
-          If you already have an Azure Pipelines YAML, you can convert it to DSL stubs:
-        </p>
-      </li>
-
-
     </list>
+  </chapter>
 
+  <chapter title="Common Usage Examples" id="common-examples">
+    <p>Generate a pipeline for the entire multi-project build:</p>
+    <code-block lang="bash">
+            ./gradlew generatePipeline
+        </code-block>
+
+    <p>Generate and validate specific subproject pipeline:</p>
+    <!--suppress WrsCodeBlockWidthInspection -->
+    <code-block lang="bash">
+            ./gradlew :subproject:validatePipeline :subproject:generateSubprojectTemplate
+        </code-block>
+
+    <p>Convert existing pipeline and validate:</p>
+    <code-block lang="bash">
+            ./gradlew convertYamlToDsl validatePipeline
+        </code-block>
 
   </chapter>
+
+  <seealso>
+    <category ref="related">
+      <a href="Configurations.topic"/>
+      <a href="Usage-DSL.topic"/>
+    </category>
+  </seealso>
 </topic>

@@ -7,7 +7,7 @@ import com.dorkag.azure_devops.dto.Schedule
 import com.dorkag.azure_devops.dto.resources.Resources
 
 
-data class Pipeline(val name: String,
+data class Pipeline(val name: String? = null,
                     val trigger: List<String>? = null,
                     val pr: List<String>? = null,
                     val pool: Pool,

@@ -75,7 +75,7 @@ open class AzurePipelineSubProjectExtension @Inject constructor(subProject: Proj
 
         // 2) Create a local copy
         val cloned = copyStageConfig(rootStage, objects) // If you want subproject displayName to differ, you can do:
-        cloned.displayName.set("Stage: $stageName (from root)")
+        cloned.displayName.set(stageName)
         cloned.declaredFromRoot.set(true)
 
         stages.put(stageName, cloned)

@@ -75,10 +75,7 @@ abstract class GenerateSubprojectTemplateTask : DefaultTask() {
     }
 
     return Pipeline(
-      name = ext.name.orNull ?: "${subprojectName.get()} Pipeline",
-      trigger = ext.trigger.get().ifEmpty { null },
-      pool = Pool(vmImage = ext.vmImage.getOrElse("ubuntu-latest")),
-      stages = stageList
+      name = ext.name.orNull, trigger = ext.trigger.get().ifEmpty { null }, pool = Pool(vmImage = ext.vmImage.getOrElse("ubuntu-latest")), stages = stageList
     )
   }
 

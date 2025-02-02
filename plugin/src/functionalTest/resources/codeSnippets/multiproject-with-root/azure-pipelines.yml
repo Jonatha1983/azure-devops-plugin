@@ -1,0 +1,8 @@
+name: Root Pipeline
+trigger:
+  - main
+pool:
+  vmImage: ubuntu-latest
+stages:
+  - template: subA/azure-pipelines.yml
+  - template: subB/azure-pipelines.yml

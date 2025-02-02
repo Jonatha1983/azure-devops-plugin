@@ -8,11 +8,11 @@
 
   <toc-element topic="Azure-DevOps-Pipeline-Plugin.topic">
     <toc-element topic="Overview.topic"/>
-    <toc-element topic="Getting-Started.topic"/>
-    <toc-element topic="Usage-DSL.topic"/>
-    <toc-element topic="Concepts.topic"/>
-    <toc-element topic="Configurations.topic"/>
-    <toc-element topic="Tasks.topic"/>
+    <toc-element topic="Getting-Started.topic">
+      <toc-element topic="Usage-DSL.topic"/>
+      <toc-element topic="Tasks.topic"/>
+      <toc-element topic="Configurations.topic"/>
+    </toc-element>
     <toc-element topic="Examples.topic"/>
   </toc-element>
 </instance-profile>

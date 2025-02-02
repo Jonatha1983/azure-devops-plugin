@@ -5,9 +5,7 @@
        xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/topic.v2.xsd"
        title="Getting Started" id="Getting-Started">
 
-  <!--Applying the Plugin
 
-Single project-->
   <chapter title="Applying the Plugin" id="applying-the-plugin">
     <p>
       To apply the plugin to a single project, add the following to your build script:

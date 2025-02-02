@@ -36,7 +36,7 @@ abstract class GenerateRootPipelineTask : DefaultTask() {
 
 
   init { // Dynamically populate subProjectsProperty (subprojects that apply the plugin)
-    subProjectsProperty.convention(
+    @Suppress("LeakingThis") subProjectsProperty.convention(
       project.provider {
         project.subprojects.filter { it.plugins.hasPlugin("com.dorkag.azuredevops") }.map { sp -> "${sp.name}|${sp.projectDir.relativeTo(project.projectDir).path}" }
       })
@@ -73,45 +73,45 @@ abstract class GenerateRootPipelineTask : DefaultTask() {
       if (!stageCfg.enabled.get()) null
       else Stage(
         stage = stageName,
-        displayName = stageCfg.displayName.orNull,
-        dependsOn = stageCfg.dependsOn.get().ifEmpty { null },
-        condition = stageCfg.condition.orNull,
-        variables = stageCfg.variables.get().ifEmpty { null },
-        jobs = mapJobs(stageCfg.jobs.get())
+                 displayName = stageCfg.displayName.orNull,
+                 dependsOn = stageCfg.dependsOn.get().ifEmpty { null },
+                 condition = stageCfg.condition.orNull,
+                 variables = stageCfg.variables.get().ifEmpty { null },
+                 jobs = mapJobs(stageCfg.jobs.get())
       )
     }
 
     return Pipeline(
       name = ext.name.getOrElse("UnnamedPipeline"),
-      trigger = ext.trigger.get().ifEmpty { null },
-      pr = ext.pr.orNull?.branches?.get()?.ifEmpty { null },
-      parameters = ext.parameters.map { it.toDto() },
-      pool = Pool(vmImage = ext.vmImage.getOrElse("ubuntu-latest")),
-      variables = ext.variables.get().ifEmpty { null },
-      resources = ext.getResources(),
-      schedules = null,
-      lockBehavior = ext.lockBehavior.orNull,
-      appendCommitMessageToRunName = ext.appendCommitMessageToRunName.orNull,
-      stages = stageList
+                    trigger = ext.trigger.get().ifEmpty { null },
+                    pr = ext.pr.orNull?.branches?.get()?.ifEmpty { null },
+                    parameters = ext.parameters.map { it.toDto() },
+                    pool = Pool(vmImage = ext.vmImage.getOrElse("ubuntu-latest")),
+                    variables = ext.variables.get().ifEmpty { null },
+                    resources = ext.getResources(),
+                    schedules = null,
+                    lockBehavior = ext.lockBehavior.orNull,
+                    appendCommitMessageToRunName = ext.appendCommitMessageToRunName.orNull,
+                    stages = stageList
     )
   }
 
   private fun buildAggregatorPipeline(ext: AzurePipelineExtension, subStrings: List<String>): Pipeline { // references subprojects as templates
     return Pipeline(
       name = ext.name.getOrElse("UnnamedPipeline"),
-      trigger = ext.trigger.get().ifEmpty { null },
-      pr = ext.pr.orNull?.branches?.get()?.ifEmpty { null },
-      parameters = ext.parameters.map { it.toDto() },
-      pool = Pool(vmImage = ext.vmImage.getOrElse("ubuntu-latest")),
-      variables = ext.variables.get().ifEmpty { null },
-      resources = ext.getResources(),
-      schedules = null,
-      lockBehavior = ext.lockBehavior.orNull,
-      appendCommitMessageToRunName = ext.appendCommitMessageToRunName.orNull,
-      stages = subStrings.map { s ->
-        val (_, subPath) = s.split("|", limit = 2)
-        Stage(template = "$subPath/azure-pipelines.yml")
-      })
+                    trigger = ext.trigger.get().ifEmpty { null },
+                    pr = ext.pr.orNull?.branches?.get()?.ifEmpty { null },
+                    parameters = ext.parameters.map { it.toDto() },
+                    pool = Pool(vmImage = ext.vmImage.getOrElse("ubuntu-latest")),
+                    variables = ext.variables.get().ifEmpty { null },
+                    resources = ext.getResources(),
+                    schedules = null,
+                    lockBehavior = ext.lockBehavior.orNull,
+                    appendCommitMessageToRunName = ext.appendCommitMessageToRunName.orNull,
+                    stages = subStrings.map { s ->
+                      val (_, subPath) = s.split("|", limit = 2)
+                      Stage(template = "$subPath/azure-pipelines.yml")
+                    })
   }
 
   private fun mapJobs(jobs: Map<String, JobConfig>): List<Job> {

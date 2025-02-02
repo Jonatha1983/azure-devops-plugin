@@ -13,5 +13,7 @@
       <toc-element topic="Tasks.topic"/>
       <toc-element topic="Configurations.topic"/>
     </toc-element>
+    <toc-element topic="FAQ.topic"/>
+    <toc-element topic="Support.topic"/>
   </toc-element>
 </instance-profile>

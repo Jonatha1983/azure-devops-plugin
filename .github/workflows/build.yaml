@@ -161,7 +161,6 @@ jobs:
           docker-version: ${{ env.DOCKER_VERSION }}
 
       - name: Save artifact with build results
-        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: docs
@@ -172,7 +171,6 @@ jobs:
 
   test-docs:
     name: Test Docs
-    if: github.event_name != 'pull_request'
     needs: build-docs
     runs-on: ubuntu-latest
     steps:

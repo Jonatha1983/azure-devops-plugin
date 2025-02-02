@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  SYSTEM "https://resources.jetbrains.com/writerside/1.0/xhtml-entities.dtd">
+<topic xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/topic.v2.xsd"
+       title="FAQ" id="FAQ">
+
+  <primary-label ref="azd"/>
+  <secondary-label ref="azd_version"/>
+
+  <chapter id="yaml_to_dsl" title="Yaml to DSL is failing">
+    The YAML to DSL task is not meant to support all YAML configurations, instead
+    it is designed to help you start with an initial simple dsl configuration.
+    If you have a complex YAML configuration, you may need to manually convert it to DSL.
+  </chapter>
+
+  <chapter id="wrong_dsl_with_root" title="Wrong DSL with root">
+    When applying the plugin to a multi-project build, including the
+    <ui-path>rootproject,</ui-path>
+    the plugin will generate a pipeline for each subproject.
+    But for the root project it will only include the subprojects with the template feature.
+  </chapter>
+
+  <chapter id="source_control" title="Should the generated YAML be in source control?">
+    <p>
+      Yes, the generated YAML should be in source control.
+      I am planning to add an option to the DSL, to generate a first task to
+      validate that the current used pipeline YAMLs are the same as the generated ones.
+      This will help you to keep the generated YAMLs in sync with the DSL and
+      will fail the build if they are not.
+    </p>
+
+  </chapter>
+  <chapter id="releases" title="Releases">
+    <p>
+      This plugin is an open source, and I will try to keep it updated with the latest Azure DevOps features
+      and with the latest Gradle versions.
+      <b>But</b> I can't guarantee that I will be able to keep up with all the changes.
+    </p>
+  </chapter>
+</topic>

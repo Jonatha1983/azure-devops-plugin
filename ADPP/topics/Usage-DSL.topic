@@ -5,6 +5,9 @@
        xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/topic.v2.xsd"
        title="Usage &amp; DSL" id="Usage-DSL">
 
+  <primary-label ref="azd"/>
+  <secondary-label ref="azd_version"/>
+
   <chapter title="Basic Usage" id="basic-usage">
     <p>Here's how to define a simple pipeline with a single Gradle task:</p>
 

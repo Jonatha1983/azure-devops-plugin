@@ -8,6 +8,7 @@ import com.dorkag.azure_devops.extensions.AzurePipelineSubProjectExtension
 import com.dorkag.azure_devops.extensions.config.JobConfig
 import com.dorkag.azure_devops.extensions.config.StepConfig
 import com.dorkag.azure_devops.utils.AzureCommentMetadataGenerator
+import com.dorkag.azure_devops.utils.AzureDevOpsPipelineConstants.AZURE_PIPELINES_YAML
 import com.dorkag.azure_devops.utils.YamlUtil
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
@@ -20,33 +21,23 @@ abstract class GenerateSubprojectTemplateTask : DefaultTask() {
   abstract val subProjectExtensionProperty: Property<AzurePipelineSubProjectExtension>
 
   @get:OutputFile
-  abstract val subprojectYaml: RegularFileProperty
+  val subprojectYaml: RegularFileProperty = project.objects.fileProperty().convention(project.layout.projectDirectory.file(AZURE_PIPELINES_YAML))
 
   @get:Input
-  abstract val pluginVersion: Property<String>
+  val pluginVersion: Property<String> = project.objects.property(String::class.java).convention("1.0.4")
 
   @get:Input
-  abstract val gradleVersion: Property<String>
+  val gradleVersion: Property<String> = project.objects.property(String::class.java).convention(project.gradle.gradleVersion)
 
   @get:Input
-  abstract val projectName: Property<String>
-
-
-  @get:Input
-  abstract val subprojectName: Property<String>
+  val projectName: Property<String> = project.objects.property(String::class.java).convention(project.provider { project.name })
 
   @get:Input
-  abstract val rootPluginApplied: Property<Boolean>
+  val subprojectName: Property<String> = project.objects.property(String::class.java).convention(project.provider { project.name })
 
+  @get:Input
+  val rootPluginApplied: Property<Boolean> = project.objects.property(Boolean::class.java).convention(false)
 
-  init {
-    subprojectYaml.convention(project.layout.projectDirectory.file("azure-pipelines.yml"))
-    pluginVersion.convention("development")
-    gradleVersion.convention(project.gradle.gradleVersion)
-    projectName.convention(project.provider { project.name })
-    subprojectName.convention(project.provider { project.name })
-
-  }
 
   @TaskAction
   fun generateSubTemplate() { // Now read rootPluginApplied:

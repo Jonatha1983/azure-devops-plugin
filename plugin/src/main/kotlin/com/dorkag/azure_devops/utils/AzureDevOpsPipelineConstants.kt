@@ -3,6 +3,7 @@ package com.dorkag.azure_devops.utils
 object AzureDevOpsPipelineConstants {
 
   const val AZURE_PIPELINE = "azurePipeline"
+  const val AZURE_PIPELINES_YAML = "azure-pipelines.yml"
   const val BRANCHES = "branches"
   const val CONDITION = "condition"
   const val DEPENDS_ON = "dependsOn"

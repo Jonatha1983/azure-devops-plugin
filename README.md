@@ -1,8 +1,10 @@
 # Azure DevOps Pipeline Plugin
 
 [![GitHub stars](https://img.shields.io/github/stars/Jonatha1983/azure-devops-plugin?style=social)](https://github.com/Jonatha1983/azure-devops-plugin/stargazers)
+
 [![Build](https://github.com/Jonatha1983/azure-devops-plugin/actions/workflows/build.yaml/badge.svg?branch=main)](https://github.com/Jonatha1983/azure-devops-plugin/actions/workflows/build.yaml)
 [![codecov](https://codecov.io/gh/Jonatha1983/azure-devops-plugin/graph/badge.svg?token=7011WZ10IR)](https://codecov.io/gh/Jonatha1983/azure-devops-plugin)
+[![Release](https://github.com/Jonatha1983/azure-devops-plugin/actions/workflows/release.yml/badge.svg)](https://github.com/Jonatha1983/azure-devops-plugin/actions/workflows/release.yml)
 [![GitHub release](https://img.shields.io/github/v/release/Jonatha1983/azure-devops-plugin?label=Latest%20Release&style=flat-square&color=blue)](https://github.com/Jonatha1983/azure-devops-plugin/releases/latest)
 
 ⚠️ **Important Notice**:  

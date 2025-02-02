@@ -32,6 +32,19 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          # For main branch: write-only mode (don't read cache)
+          cache-write-only: ${{ github.ref == 'refs/heads/main' }}
+          # For PR branches: read-write mode with strict matching
+          cache-read-only: false
+          gradle-home-cache-strict-match: ${{ github.event_name == 'pull_request' }}
+          gradle-home-cache-includes: |
+            caches
+            notifications
+            jdks
+          gradle-home-cache-excludes: |
+            user-switches.xml
+            wrapper/dists/**/*.lock
 
       # Extract version and changelog from Gradle
       - name: Export Properties
@@ -63,6 +76,19 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          # For main branch: write-only mode (don't read cache)
+          cache-write-only: ${{ github.ref == 'refs/heads/main' }}
+          # For PR branches: read-write mode with strict matching
+          cache-read-only: false
+          gradle-home-cache-strict-match: ${{ github.event_name == 'pull_request' }}
+          gradle-home-cache-includes: |
+            caches
+            notifications
+            jdks
+          gradle-home-cache-excludes: |
+            user-switches.xml
+            wrapper/dists/**/*.lock
 
       # Run Check
       - name: Run Check

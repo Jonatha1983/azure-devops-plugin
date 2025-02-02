@@ -1,11 +1,12 @@
-name: Gradle Plugin Portal Release
+name: Release
 
 on:
   release:
-    types: [ published ]  # triggers when you publish (not just create) a release
+    types: [ prereleased, released ]
 
 jobs:
-  gradleRelease:
+  release:
+    name: Publish Plugin
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -59,22 +60,23 @@ jobs:
           BRANCH="changelog-update-$VERSION"
           LABEL="release changelog"
           
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
+          git config user.email "action@github.com"
+          git config user.name "GitHub Action"
           
-          git checkout -b "$BRANCH"
+          git checkout -b $BRANCH
           git commit -am "Changelog update - $VERSION"
-          git push --set-upstream origin "$BRANCH"
+          git push --set-upstream origin $BRANCH
           
           gh label create "$LABEL" \
             --description "Pull requests with release changelog update" \
-            --force || true
+            --force \
+            || true
           
           gh pr create \
             --title "Changelog update - \`$VERSION\`" \
-            --body "This PR updates the \`CHANGELOG.md\` file for the \`$VERSION\` version." \
+            --body "Current pull request contains patched \`CHANGELOG.md\` file for the \`$VERSION\` version." \
             --label "$LABEL" \
-            --head "$BRANCH"
+            --head $BRANCH
 
         # Publish to Gradle Plugin Portal
       - name: Publish to Gradle Plugin Portal

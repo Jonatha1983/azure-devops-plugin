@@ -1,5 +1,5 @@
 ---
-name: Azure DevOps Pipeline Gradle Plugin Bug
+name: Azure DevOps Pipeline Gradle Plugin Feature
 about: Create a report to help us improve
 title: "[BUG]:"
 labels: bug

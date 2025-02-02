@@ -33,14 +33,14 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      # Set environment variables
+      # Extract version + changelog from Gradle
       - name: Export Properties
         id: properties
         shell: bash
         run: |
           PROPERTIES="$(./gradlew properties --console=plain -q)"
           VERSION="$(echo "$PROPERTIES" | grep "^version:" | cut -f2- -d ' ')"
-          CHANGELOG="$(./gradlew getChangelog --unreleased --no-header --console=plain -q)"
+          CHANGELOG="$(./gradlew getChangelog --unreleased --no-header --console=plain -q || true)"
 
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
@@ -48,7 +48,7 @@ jobs:
           echo "$CHANGELOG" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      # Run Assemble
+      # Build or assemble
       - name: Run Assemble
         run: ./gradlew assemble
 
@@ -216,8 +216,8 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-  # Prepare a draft release for GitHub Releases page for the manual verification
-  # If accepted and published, release workflow would be triggered
+  # Prepare a draft release for GitHub Releases page for manual verification
+  # If accepted and published, the 'Gradle Plugin Portal Release' workflow is triggered
   releaseDraft:
     name: Release draft
     if: github.event_name != 'pull_request'
@@ -226,29 +226,32 @@ jobs:
     permissions:
       contents: write
     steps:
-
-      # Check out the current repository
       - name: Fetch Sources
         uses: actions/checkout@v4
 
-      # Remove old release drafts by using the curl request for the available releases with a draft flag
-      - name: Remove Old Release Drafts
+      - name: Remove Old Draft Releases
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh api repos/{owner}/{repo}/releases \
+          gh api repos/${{ github.repository }}/releases \
             --jq '.[] | select(.draft == true) | .id' \
-            | xargs -I '{}' gh api -X DELETE repos/{owner}/{repo}/releases/{}
+            | xargs -I '{}' gh api -X DELETE repos/${{ github.repository }}/releases/{}
 
-      # Create a new release draft which is not publicly visible and requires manual acceptance
       - name: Create Release Draft
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "v${{ needs.build.outputs.version }}" \
+          VERSION="${{ needs.build.outputs.version }}"
+          CHANGELOG="${{ needs.build.outputs.changelog }}"
+
+          if [ -z "$VERSION" ]; then
+            VERSION="0.0.1-draft"
+          fi
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG="No changelog found."
+          fi
+
+          gh release create "v$VERSION" \
             --draft \
-            --title "v${{ needs.build.outputs.version }}" \
-            --notes "$(cat << 'EOM'
-          ${{ needs.build.outputs.changelog }}
-          EOM
-          )"
+            --title "v$VERSION" \
+            --notes "$CHANGELOG"

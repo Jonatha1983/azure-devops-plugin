@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="ffc8fc00-25cc-4e71-a6a2-140025d4ad32" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../.github/workflows/release.yml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Jonatha1983&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;git@github.com:Jonatha1983/azure-devops-plugin.git&quot;,
+    &quot;accountId&quot;: &quot;875d3b3a-2143-4f8f-8a39-281ec01de3b4&quot;
+  }
+}</component>
+  <component name="InstanceColorv3">
+    <option name="map">
+      <map>
+        <entry key="$PROJECT_DIR$/adpp.tree">
+          <value>
+            <ColorState>
+              <option name="customOrder" value="1" />
+              <option name="first">
+                <RgbState>
+                  <option name="blue" value="60" />
+                  <option name="darkBlue" value="60" />
+                  <option name="darkGreen" value="68" />
+                  <option name="darkRed" value="206" />
+                  <option name="green" value="68" />
+                  <option name="red" value="206" />
+                </RgbState>
+              </option>
+              <option name="second">
+                <RgbState>
+                  <option name="blue" value="65" />
+                  <option name="darkBlue" value="65" />
+                  <option name="darkGreen" value="126" />
+                  <option name="darkRed" value="231" />
+                  <option name="green" value="126" />
+                  <option name="red" value="231" />
+                </RgbState>
+              </option>
+            </ColorState>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 1
+}</component>
+  <component name="ProjectId" id="2sJUCWu8ha4yLqH8ZbO6Ub0QGor" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;#31 on feature/az__pl__br1&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/jonathangafner/IdeaProjects/azure-devops-plugin/ADPP&quot;
+  },
+  &quot;keyToStringList&quot;: {
+    &quot;stardust.markdown.MarkdownSplitEditorSuppressor:keyList&quot;: []
+  }
+}</component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+</project>

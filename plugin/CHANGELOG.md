@@ -6,6 +6,8 @@ Azure DevOps Pipelines Plugin
 
 ### Added
 
+- Gradle Portal release plugin. 
+
 ### Changed
 
 ### Deprecated

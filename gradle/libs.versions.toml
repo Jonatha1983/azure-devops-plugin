@@ -5,6 +5,6 @@ qodana = "2024.3.4"
 changelog = "2.2.1"
 
 [plugins]
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.1.10" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.1.21" }
 qodana = { id = "org.jetbrains.qodana", version.ref = "qodana" }
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }

@@ -28,7 +28,7 @@ jobs:
       changelog: ${{ steps.properties.outputs.changelog }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -72,7 +72,7 @@ jobs:
     steps:
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -128,7 +128,7 @@ jobs:
       pull-requests: write
       checks: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ github.event.pull_request.head.sha }}  # to check out the actual pull request commit, not the merge commit
           fetch-depth: 0  # a full history is required for pull request analysis
@@ -151,7 +151,7 @@ jobs:
       actions: read
     steps:
       - name: Fetch Sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           token: '${{ secrets.GITHUB_TOKEN }}'
 
@@ -177,7 +177,7 @@ jobs:
     needs: build
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Build docs using Writerside Docker builder
         uses: JetBrains/writerside-github-action@v4
@@ -251,7 +251,7 @@ jobs:
       contents: write
     steps:
       - name: Fetch Sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Remove Old Draft Releases
         env:
